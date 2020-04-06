@@ -1,2 +1,2 @@
-pyyaml==5.3.1
-3to2==1.1.1
+pyyaml
+3to2
