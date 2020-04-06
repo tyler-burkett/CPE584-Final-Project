@@ -1,0 +1,10 @@
+cells:
+- cell1: &id001
+    cell: inverter
+    inputs: -in -vdd -gnd
+    outputs: -out
+- cell2: *id001
+library: scl40_htmv
+netlist:
+- - cell1.out
+  - cell2.in
