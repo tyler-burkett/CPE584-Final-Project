@@ -1,2 +1,3 @@
 pyyaml
 3to2
+jinja2
