@@ -1,7 +1,0 @@
-top:
-  library: scl40_htmv
-  cells:
-    - cell1: *inverter
-    - cell2: *inverter
-  netlist:
-    - [cell1.out, cell2.in]

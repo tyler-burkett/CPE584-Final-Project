@@ -1,8 +1,0 @@
-inverter: &inverter
-  cell: inverter
-  inputs:
-    -in
-    -vdd
-    -gnd
-  outputs:
-    -out
