@@ -10,13 +10,13 @@ cells:
 -
   function: nand2
   name: nand2
-  drives: 1, 2, 4, 8
-  out: Y     # maps to out0, out1, etc.
-  in: A, B   # maps to in0, in1, etc.
+  drives: [1, 2, 4, 8]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A, B] # maps to in0, in1, etc.
 -
   function: or3
   name: or3
-  drives: 1, 2, 4
-  out: X
-  in: A, B, C
+  drives: [1, 2, 4]
+  out: [X]
+  in: [A, B, C]
 # End of config file
