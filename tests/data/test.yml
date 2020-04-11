@@ -32,6 +32,100 @@ cells:
   drives: [0, 1, 2, 4]
   out: [Y] # maps to out0, out1, etc.
   in: [A1, A2, B1N] # maps to in0, in1, etc.
+-
+  function: a21o
+  name: a21o
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A1, A2, B1] # maps to in0, in1, etc.
+-
+  function: a21oi
+  name: a21oi
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1, A2, B1] # maps to in0, in1, etc.
+-
+  function: a22o
+  name: a22o
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A1, A2, B1, B2] # maps to in0, in1, etc.
+-
+  function: a22oi
+  name: a22oi
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1, A2, B1, B2] # maps to in0, in1, etc.
+-
+  function: a31o
+  name: a31o
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A1, A2, A3, B1] # maps to in0, in1, etc.
+-
+  function: a31oi
+  name: a31oi
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1, A2, A3, B1] # maps to in0, in1, etc.
+-
+  function: a32o
+  name: a32o
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A1, A2, A3, B1, B2] # maps to in0, in1, etc.
+-
+  function: a32oi
+  name: a32oi
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1, A2, A3, B1, B2] # maps to in0, in1, etc.
+-
+  function: a41o
+  name: a41o
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A1, A2, A3, A4, B1] # maps to in0, in1, etc.
+-
+  function: a41oi
+  name: a41oi
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1, A2, A3, A4, B1] # maps to in0, in1, etc.
+-
+  function: a211o
+  name: a211o
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A1, A2, B1, C1] # maps to in0, in1, etc.
+-
+  function: a211oi
+  name: a211oi
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1, A2, B1, C1] # maps to in0, in1, etc.
+-
+  function: a221o
+  name: a221o
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A1, A2, B1, B2, C1] # maps to in0, in1, etc.
+-
+  function: a221oi
+  name: a221oi
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1, A2, B1, B2, C1] # maps to in0, in1, etc.
+-
+  function: a222oi
+  name: a222oi
+  drives: [1]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1, A2, B1, B2, C1, C2] # maps to in0, in1, etc.
+
+
+
+
 
 
 
