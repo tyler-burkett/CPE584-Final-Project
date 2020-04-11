@@ -122,6 +122,55 @@ cells:
   drives: [1]
   out: [Y] # maps to out0, out1, etc.
   in: [A1, A2, B1, B2, C1, C2] # maps to in0, in1, etc.
+-
+  function: a311o
+  name: a311o
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A1, A2, A3, B1, C1] # maps to in0, in1, etc.
+-
+  function: a311oi
+  name: a311oi
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1, A2, A3, B1, C1] # maps to in0, in1, etc.
+-
+  function: a2111o
+  name: a2111o
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A1, A2, B1, C1, D1] # maps to in0, in1, etc.
+-
+  function: a2111oi
+  name: a2111oi
+  drives: [0, 1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1, A2, B1, C1, D1] # maps to in0, in1, etc.
+-
+  function: a2111oi
+  name: a2111oi
+  drives: [0, 1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1, A2, B1, C1, D1] # maps to in0, in1, etc.
+-
+  function: and2
+  name: and2
+  drives: [0, 1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A, B] # maps to in0, in1, etc.
+-
+  function: and2b
+  name: and2b
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [AN, B] # maps to in0, in1, etc.
+-
+  function: and3
+  name: and3
+  drives: [0, 1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A, B, C] # maps to in0, in1, etc.
+
 
 
 
