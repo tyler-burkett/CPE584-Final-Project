@@ -7,6 +7,35 @@ vnb0: vnb
 
 # Cells to generate
 cells:
+#What I added- Alex Schuster (going in order of the scs8hd file)
+-
+  function: a2bb2o
+  name: a2bb2o
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A1N, A2N, B1, B2] # maps to in0, in1, etc.
+-
+  function: a2bb2oi
+  name: a2bb2oi
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1N, A2N, B1, B2] # maps to in0, in1, etc.
+-
+  function: a21bo
+  name: a21bo
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A1, A2, B1N] # maps to in0, in1, etc.
+-
+  function: a21boi
+  name: a21boi
+  drives: [0, 1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1, A2, B1N] # maps to in0, in1, etc.
+
+
+
+#provided to us by Brian Evans 
 -
   function: nand2
   name: nand2
