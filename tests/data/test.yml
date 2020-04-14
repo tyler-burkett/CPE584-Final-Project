@@ -167,10 +167,219 @@ cells:
 -
   function: and3
   name: and3
-  drives: [0, 1, 2, 4]
+  drives: [1, 2, 4]
   out: [X] # maps to out0, out1, etc.
   in: [A, B, C] # maps to in0, in1, etc.
-
+-
+  function: and3b
+  name: and3b
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [AN, B, C] # maps to in0, in1, etc.
+-
+  function: and4
+  name: and4
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A, B, C, D] # maps to in0, in1, etc.
+-
+  function: and4b
+  name: and4b
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [AN, B, C, D] # maps to in0, in1, etc.
+-
+  function: and4bb
+  name: and4bb
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [AN, BN, C, D] # maps to in0, in1, etc.
+-
+  function: buf
+  name: buf
+  drives: [1, 2, 4, 6, 8, 12, 16]
+  out: [X] # maps to out0, out1, etc.
+  in: [A] # maps to in0, in1, etc.
+-
+  function: bufbuf
+  name: bufbuf
+  drives: [8, 16]
+  out: [X] # maps to out0, out1, etc.
+  in: [A] # maps to in0, in1, etc.
+-
+  function: bufinv
+  name: bufinv
+  drives: [8, 16]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A] # maps to in0, in1, etc.
+-
+  function: clkbuf
+  name: clkbuf
+  drives: [1, 2, 4, 8, 16]
+  out: [X] # maps to out0, out1, etc.
+  in: [A] # maps to in0, in1, etc.
+-
+  function: clkdlybuf4s15
+  name: clkdlybuf4s15
+  drives: [1, 2]
+  out: [X] # maps to out0, out1, etc.
+  in: [A] # maps to in0, in1, etc.
+-
+  function: clkdlybuf4s18
+  name: clkdlybuf4s18
+  drives: [1, 2]
+  out: [X] # maps to out0, out1, etc.
+  in: [A] # maps to in0, in1, etc.
+-
+  function: clkdlybuf4s25
+  name: clkdlybuf4s25
+  drives: [1, 2]
+  out: [X] # maps to out0, out1, etc.
+  in: [A] # maps to in0, in1, etc.
+-
+  function: clkdlybuf4s50
+  name: clkdlybuf4s50
+  drives: [1, 2]
+  out: [X] # maps to out0, out1, etc.
+  in: [A] # maps to in0, in1, etc.
+-
+  function: clkinv
+  name: clkinv
+  drives: [1, 2, 4, 8, 16]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A] # maps to in0, in1, etc.
+-
+  function: clkinvlp
+  name: clkinvlp
+  drives: [2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A] # maps to in0, in1, etc.
+-
+  function: conb
+  name: conb
+  drives: [1]
+  out: [HI,LO] # maps to out0, out1, etc.
+  in: [] # maps to in0, in1, etc.
+-
+  function: decap
+  name: decap
+  drives: [3, 4, 6, 8, 12]
+  out: [] # maps to out0, out1, etc.
+  in: [] # maps to in0, in1, etc.
+-
+  function: dfbbn
+  name: dfbbn
+  drives: [1, 2]
+  out: [Q, QN] # maps to out0, out1, etc.
+  in: [D, CLKN, SETB, RESETB] # maps to in0, in1, etc.
+-
+  function: dfbbp
+  name: dfbbp
+  drives: [1]
+  out: [Q, QN] # maps to out0, out1, etc.
+  in: [D, CLK, SETB, RESETB] # maps to in0, in1, etc.
+-
+  function: dfrbp
+  name: dfrbp
+  drives: [1, 2]
+  out: [Q, QN] # maps to out0, out1, etc.
+  in: [CLK, D, RESETB] # maps to in0, in1, etc.
+-
+  function: dfrtn
+  name: dfrtn
+  drives: [1]
+  out: [Q] # maps to out0, out1, etc.
+  in: [CLKN, D, RESETB] # maps to in0, in1, etc.
+-
+  function: dfrtp
+  name: dfrtp
+  drives: [1, 2, 4]
+  out: [Q] # maps to out0, out1, etc.
+  in: [CLK, D, RESETB] # maps to in0, in1, etc.
+-
+  function: dfsbp
+  name: dfsbp
+  drives: [1, 2]
+  out: [Q, QN] # maps to out0, out1, etc.
+  in: [CLK, D, SETB] # maps to in0, in1, etc.
+-
+  function: dfstp
+  name: dfstp
+  drives: [1, 2, 4]
+  out: [Q] # maps to out0, out1, etc.
+  in: [CLK, D, SETB] # maps to in0, in1, etc.
+-
+  function: dfxbp
+  name: dfxbp
+  drives: [1, 2]
+  out: [Q, QN] # maps to out0, out1, etc.
+  in: [CLK, D] # maps to in0, in1, etc.
+-
+  function: dfxtp
+  name: dfxtp
+  drives: [1, 2, 4]
+  out: [Q] # maps to out0, out1, etc.
+  in: [CLK, D] # maps to in0, in1, etc.
+-
+  function: diode
+  name: diode
+  drives: [2]
+  out: [] # maps to out0, out1, etc.
+  in: [DIODE] # maps to in0, in1, etc.
+-
+  function: dlclkp
+  name: dlclkp
+  drives: [1, 2, 4]
+  out: [GCLK] # maps to out0, out1, etc.
+  in: [GATE, CLK] # maps to in0, in1, etc.
+-
+  function: dlrbn
+  name: dlrbn
+  drives: [1, 2]
+  out: [Q, QN] # maps to out0, out1, etc.
+  in: [RESETB, D, GATEN] # maps to in0, in1, etc.
+-
+  function: dlrbp
+  name: dlrbp
+  drives: [1, 2]
+  out: [Q, QN] # maps to out0, out1, etc.
+  in: [RESETB, D, GATE] # maps to in0, in1, etc.
+-
+  function: dlrtn
+  name: dlrtn
+  drives: [1, 2, 4]
+  out: [Q] # maps to out0, out1, etc.
+  in: [RESETB, D, GATEN] # maps to in0, in1, etc.
+-
+  function: dlrtp
+  name: dlrtp
+  drives: [1, 2]
+  out: [Q] # maps to out0, out1, etc.
+  in: [RESETB, D, GATE] # maps to in0, in1, etc.
+-
+  function: dlxbn
+  name: dlxbn
+  drives: [1, 2]
+  out: [Q, QN] # maps to out0, out1, etc.
+  in: [D, GATEN] # maps to in0, in1, etc.
+-
+  function: dlxbp
+  name: dlxbp
+  drives: [1]
+  out: [Q, QN] # maps to out0, out1, etc.
+  in: [D, GATE] # maps to in0, in1, etc.
+-
+  function: dlxtn
+  name: dlxtn
+  drives: [1, 2, 4]
+  out: [Q] # maps to out0, out1, etc.
+  in: [D, GATEN] # maps to in0, in1, etc.
+-
+  function: dlxtp
+  name: dlxtp
+  drives: [1]
+  out: [Q] # maps to out0, out1, etc.
+  in: [D, GATE] # maps to in0, in1, etc.
 
 
 
