@@ -5,6 +5,8 @@ import jinja2.meta
 import yaml
 import argparse
 import itertools
+import os
+import re
 
 def get_variables(env, template_file):
     src = env.loader.get_source(env, template_file)
@@ -16,7 +18,8 @@ if __name__ == "__main__":
     input_parser.add_argument("-g", "--generic_models", metavar="GEN_DIR",
     nargs=1, help="specify location of generic Verilog models")
     input_parser.add_argument("-d", "--lib_directory", metavar="DIR",
-    nargs=1, help="specify destination directory of generic Verilog models")
+    nargs=1, help="specify destination directory of specific Verilog models")
+    input_parser.add_argument("-1", "--1-file", action="store_true", help="make output of template go to a single library file rather than individual files")
     input_parser.add_argument("lib_spec", help="the YAML file containing specifications for the library")
 
     args = input_parser.parse_args()
@@ -43,7 +46,9 @@ if __name__ == "__main__":
         try:
             lib_dir = library_spec["lib_directory"]
         except:
-            lib_dir = "."
+            lib_dir = "./{}".format(library_spec["lib"])
+        except:
+            lib_dir = "./out_lib"
 
     # Copy global parameters from the lib_spec YAML
     global_dict = dict()
@@ -55,7 +60,7 @@ if __name__ == "__main__":
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(generic_models_dir),
         variable_start_string="{?", variable_end_string="?}")
 
-    for cell in library_spec["cells"]:
+    for num, cell in enumerate(library_spec["cells"]):
         # Make in and out an element in its own list
         # (they are supposed to be a list; we do not want to
         # iterate over them in this step)
@@ -68,6 +73,23 @@ if __name__ == "__main__":
             if not isinstance(value, list):
                 cell[key] = [cell[key]]
 
+        cell_keys = cell.keys()
+        cell_values = cell.values()
+
+        # check for missing parameters by loading the template specifed in "function"
+        # and checking all the keys in the final template dict match variables in the
+        # template
+        precheck_dict = {*global_dict.keys(), cell_keys}
+        template_file = cell["function"] + ".v"
+        # TODO: catch invalid function
+        variables = get_variables(env, template_file)
+        complete_vars = all(var in precheck_dict.keys() for var in variables)
+        if not complete_vars:
+            # If variables are missing, skip the cell and move on
+            missing_vars = set(var not in precheck_dict.keys() for var in variables)
+            print("error: missing the following variables {} for cell# {}".format(str(missing_vars), num))
+            continue
+
         # Calculate the cross product of the parameters in the cell
         # and convert that back into a dict with the same names
         # Ex:
@@ -76,14 +98,12 @@ if __name__ == "__main__":
         # drives: [1, 2, 4]
         # out: [X] # maps to out0, out1, etc.
         # in: [A1N, A2N, B1, B2] # maps to in0, in1, etc.
-        # Cross prodcuts:
+        # Cross products:
         # {
         # (name: a2bb2o, drives: 1, out:[X], in:[A1N, A2N, B1, B2]),
         # (name: a2bb2o, drives: 2, out: [X], in: [A1N, A2N, B1, B2]),
         # (name: a2bb2o, drives: 4, out: [X], in: [A1N, A2N, B1, B2]),
         # }
-        cell_keys = cell.keys()
-        cell_values = cell.values()
         for combination in itertools.product(*cell_values):
 
             # Combine global dict and a specfic combination of paramters into None
@@ -91,13 +111,19 @@ if __name__ == "__main__":
             template_dict = {**global_dict, **dict(zip(cell_keys, combination))}
 
             # Load template
-            # TODO: catch invalid function
-            template_file = cell["function"] + ".v"
             template = env.get_template(template_file)
 
-            # TODO: check for missing parameters
-            variables = get_variables(env, template_file)
+            templating_result = template.render(template_dict)
 
-            template.render(template_dict)
-        # Load template: template = env.get_template(model_name + ".v")
-        # Render template: template.render(**vars_dict)
+            if vars(args)["1_file"] is True:
+                # append the results to one big library file
+                file_name = "{}.v".format(library_spec["lib"])
+            else:
+                # create a seperate .v file for the new cell
+                match = re.match(r"module ([\d\w]*) ", templating_result)
+                file_name = match[1] + ".v"
+
+            # Open file and write the templating results to it
+            file_path = os.path.join(lib_dir, file_name)
+            with open(file_path, "a") as file:
+                file.write(templating_result)
