@@ -81,13 +81,18 @@ if __name__ == "__main__":
         # template
         precheck_dict = {*global_dict.keys(), cell_keys}
         template_file = cell["function"] + ".v"
-        # TODO: catch invalid function
-        variables = get_variables(env, template_file)
+        try:
+            variables = get_variables(env, template_file)
+        except jinja2.exceptions.TemplatesNotFound:
+            # Unknown function given in cell; print error and skip to next cell
+            print("error: unknown function {} found in cell# {}".format(str(cell["function"]), str(num)))
+            continue
+
         complete_vars = all(var in precheck_dict.keys() for var in variables)
         if not complete_vars:
             # If variables are missing, skip the cell and move on
             missing_vars = set(var not in precheck_dict.keys() for var in variables)
-            print("error: missing the following variables {} for cell# {}".format(str(missing_vars), num))
+            print("error: missing the following variables {} for cell# {}".format(str(missing_vars), str(num)))
             continue
 
         # Calculate the cross product of the parameters in the cell
