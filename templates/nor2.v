@@ -1,3 +1,13 @@
+{#
+    DESCRIPTION
+        2-input nor
+    PARAMETER MAPPING
+        in[0]   :   A
+        in[1]   :   B
+        out[0]  :   Y
+-#}
+
+
 {?header?}
 
 
@@ -5,17 +15,17 @@
 `timescale {?timescale?}
 
 
-module {?lib?}_nor2_{?drive?} (
-output {?out0?},
+module {?lib?}_{?name?}_{?drive?} (
+output {?out[0]?},
 
-input {?in0?},
-input {?in1?}
+input {?in[0]?},
+input {?in[1]?}
 
 `ifdef SC_USE_PG_PIN
-, input {?vpwr0?}
-, input {?vgnd0?}
-, input {?vpb0?}
-, input {?vnb0?}
+, input {?vpwr[0]?}
+, input {?vgnd[0]?}
+, input {?vpb[0]?}
+, input {?vnb[0]?}
 `endif
 
 );
@@ -24,10 +34,10 @@ input {?in1?}
     `else
     `ifdef SC_USE_PG_PIN
     `else
-    supply1 {?vpwr0?};
-    supply0 {?vgnd0?};
-    supply1 {?vpb0?};
-    supply0 {?vnb0?};
+    supply1 {?vpwr[0]?};
+    supply0 {?vgnd[0]?};
+    supply1 {?vpb[0]?};
+    supply0 {?vnb[0]?};
     `endif
     `endif
 
@@ -37,20 +47,20 @@ input {?in1?}
     reg csi_notifier;
 
     specify
-        ({?in0?} +=> {?out0?}) = (0:0:0, 0:0:0);
-        ({?in0?} -=> {?out0?}) = (0:0:0, 0:0:0);
-        ({?in1?} +=> {?out0?}) = (0:0:0, 0:0:0);
-        ({?in1?} -=> {?out0?}) = (0:0:0, 0:0:0);
+        ({?in[0]?} +=> {?out[0]?}) = (0:0:0, 0:0:0);
+        ({?in[0]?} -=> {?out[0]?}) = (0:0:0, 0:0:0);
+        ({?in[1]?} +=> {?out[0]?}) = (0:0:0, 0:0:0);
+        ({?in[1]?} -=> {?out[0]?}) = (0:0:0, 0:0:0);
     endspecify
     `endif
 
-    nor (UDP_IN_Y, {?in0?}, {?in1?});
+    nor (UDP_IN_Y, {?in[0]?}, {?in[1]?});
 
     `ifdef SC_USE_PG_PIN
-    {?lib?}_pg_U_VPWR_VGND (UDP_OUT_Y, UDP_IN_Y, {?vpwr0?}, {?vgnd0?}) ;
-    buf ({?out0?}, UDP_OUT_Y);
+    {?lib?}_pg_U_VPWR_VGND (UDP_OUT_Y, UDP_IN_Y, {?vpwr[0]?}, {?vgnd[0]?}) ;
+    buf ({?out[0]?}, UDP_OUT_Y);
     `else
-    buf ({?out0?}, UDP_IN_Y);
+    buf ({?out[0]?}, UDP_IN_Y);
     `endif
 
 endmodule
