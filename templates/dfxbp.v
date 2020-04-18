@@ -1,22 +1,34 @@
-{?header?}
+{#
+	DESCRIPTION
+		D-Flip Flop (q and qb)
+	PARAMETER MAPPING
+		in[0]	:	CLK
+		in[1]	:	D
+		out[0]	:	Q
+		out[1]	:	QN
+-#}
+
+
+{? header ?}
+
 
 `celldefine
-`timescale {?timescale?}
+`timescale 1ns / 1ps
 
 
 
-module {?lib?}_dfxbp_{?drive?}  (
-output {?out0?},
-output {?out1?},
+module {? lib ?}_{? name ?}_{? drive ?}  (
+output {? out[0] ?},
+output {? out[1] ?},
 
-input {?CLK0?},
-input {?D0?}
+input {? in[0] ?},
+input {? in[1] ?}
 
 `ifdef SC_USE_PG_PIN
-, input {?vpwr0?}
-, input {?vgnd0?}
-, input {?vpb0?}
-, input {?vnb0?}
+, input {? vpwr[0] ?}
+, input {? vgnd[0] ?}
+, input {? vpb[0] ?}
+, input {? vnb[0] ?}
 `endif
 
 );
@@ -25,10 +37,10 @@ input {?D0?}
 `else
 `ifdef SC_USE_PG_PIN
 `else
-supply1 {?vpwr0?};
-supply0 {?vgnd0?};
-supply1 {?vpb0?};
-supply0 {?vnb0?};
+supply1 {? vpwr[0] ?};
+supply0 {? vgnd[0] ?};
+supply1 {? vpb[0] ?};
+supply0 {? vnb[0] ?};
 `endif
 `endif
 
@@ -39,11 +51,11 @@ supply0 {?vnb0?};
 
   `ifdef SC_USE_PG_PIN
 
-   {?lib?}_pg_U_DF_P_NO_pg #0.001 ( buf_Q , {?D0?} , {?CLK0?} ,  , {?vpwr0?} , {?vgnd0?} ) ;
+   {? lib ?}_pg_U_DF_P_NO_pg #0.001 ( buf_Q , {? in[1] ?} , {? in[0] ?} ,  , {? vpwr[0] ?} , {? vgnd[0] ?} ) ;
 
   `else
 
-   {?lib?}_pg_U_DF_P #0.001 ( buf_Q , {?D0?} , {?CLK0?} ) ;
+   {? lib ?}_pg_U_DF_P #0.001 ( buf_Q , {? in[1] ?} , {? in[0] ?} ) ;
 
   `endif 
 
@@ -52,28 +64,28 @@ supply0 {?vnb0?};
   reg notifier ; 
   wire D_delayed;
   wire CLK_delayed;
-  {?lib?}_pg_U_DF_P_NO_pg ( buf_Q , D_delayed , CLK_delayed , notifier , {?vpwr0?} , {?vgnd0?} ) ; 
+  {? lib ?}_pg_U_DF_P_NO_pg ( buf_Q , D_delayed , CLK_delayed , notifier , {? vpwr[0] ?} , {? vgnd[0] ?} ) ; 
 
   wire AWAKE;
-  assign AWAKE = ( {?vpwr0?} === 1'b1 ) ; 
+  assign AWAKE = ( {? vpwr[0] ?} === 1'b1 ) ; 
 
   specify
 
-    ( posedge {?CLK0?} => ( {?out0?} : {?CLK0?} ) ) = ( 0:0:0 , 0:0:0 ) ; // delays are tris , tfall
-    ( posedge {?CLK0?} => ( {?out1?} : {?CLK0?} ) ) = ( 0:0:0 , 0:0:0 ) ; // delays are tris , tfall
+    ( posedge {? in[0] ?} => ( {? out[0] ?} : {? in[0] ?} ) ) = ( 0:0:0 , 0:0:0 ) ; // delays are tris , tfall
+    ( posedge {? in[0] ?} => ( {? out[1] ?} : {? in[0] ?} ) ) = ( 0:0:0 , 0:0:0 ) ; // delays are tris , tfall
 
-    $width ( posedge {?CLK0?} &&& AWAKE , 1.0:1.0:1.0 , 0 , notifier ) ; 
-    $width ( negedge {?CLK0?} &&& AWAKE , 1.0:1.0:1.0 , 0 , notifier ) ; 
+    $width ( posedge {? in[0] ?} &&& AWAKE , 1.0:1.0:1.0 , 0 , notifier ) ; 
+    $width ( negedge {? in[0] ?} &&& AWAKE , 1.0:1.0:1.0 , 0 , notifier ) ; 
 
-    $setuphold ( posedge {?CLK0?} , posedge {?D0?} , 0:0:0 , 0:0:0 , notifier , AWAKE , AWAKE , CLK_delayed , D_delayed ) ; 
-    $setuphold ( posedge {?CLK0?} , negedge {?D0?} , 0:0:0 , 0:0:0 , notifier , AWAKE , AWAKE , CLK_delayed , D_delayed ) ; 
+    $setuphold ( posedge {? in[0] ?} , posedge {? in[1] ?} , 0:0:0 , 0:0:0 , notifier , AWAKE , AWAKE , CLK_delayed , D_delayed ) ; 
+    $setuphold ( posedge {? in[0] ?} , negedge {? in[1] ?} , 0:0:0 , 0:0:0 , notifier , AWAKE , AWAKE , CLK_delayed , D_delayed ) ; 
 
   endspecify
 
 `endif
 
-buf ( {?out0?} , buf_Q ) ; 
-not ( {?out1?} , buf_Q ) ; 
+buf ( {? out[0] ?} , buf_Q ) ; 
+not ( {? out[1] ?} , buf_Q ) ; 
 
 endmodule
 `endcelldefine

@@ -1,23 +1,37 @@
-{?header?}
+{#
+	DESCRIPTION
+		D-Flip Flop with async set active low and async reset active low (q and qb)
+	PARAMETER MAPPING
+		in[0]	:	D
+		in[1]	:	CLK
+		in[2]	:	SETB
+		in[3]	:	RESETB
+		out[0]	:	Q
+		out[1]	:	QN
+-#}
+
+
+{? header ?}
+
 
 `celldefine
-`timescale {?timescale?}
+`timescale 1ns / 1ps
 
 
 
-module {?lib?}_dfbbp_{?drive?}  (
-output {?out0?},
-output {?out1?},
-input {?D0?},
-input {?CLK0?},
-input {?SETB0?},
-input {?RESETB0?}
+module {? lib ?}_{? name ?}_{? drive ?}  (
+output {? out[0] ?},
+output {? out[1] ?},
+input {? in[0] ?},
+input {? in[1] ?},
+input {? in[2] ?},
+input {? in[3] ?}
 
 `ifdef SC_USE_PG_PIN
-, input {?vpwr0?}
-, input {?vgnd0?}
-, input {?vpb0?}
-, input {?vnb0?}
+, input {? vpwr[0] ?}
+, input {? vgnd[0] ?}
+, input {? vpb[0] ?}
+, input {? vnb[0] ?}
 `endif
 
 );
@@ -26,10 +40,10 @@ input {?RESETB0?}
 `else
 `ifdef SC_USE_PG_PIN
 `else
-supply1 {?vpwr0?};
-supply0 {?vgnd0?};
-supply1 {?vpb0?};
-supply0 {?vnb0?};
+supply1 {? vpwr[0] ?};
+supply0 {? vgnd[0] ?};
+supply1 {? vpb[0] ?};
+supply0 {? vnb[0] ?};
 `endif
 `endif
 
@@ -39,12 +53,12 @@ supply0 {?vnb0?};
   wire buf_Q;
   
 `ifdef functional
-    not ( reset , {?RESETB0?} ) ; 
-    not ( set , {?SETB0?} ) ; 
+    not ( reset , {? in[3] ?} ) ; 
+    not ( set , {? in[2] ?} ) ; 
     `ifdef SC_USE_PG_PIN
-     {?lib?}_pg_U_DFB_SETDOM_NO_pg #0.001 ( buf_Q , set , reset , {?CLK0?} , {?D0?} ,  , {?vpwr0?} , {?vgnd0?} ) ;
+     {? lib ?}_pg_U_DFB_SETDOM_NO_pg #0.001 ( buf_Q , set , reset , {? in[1] ?} , {? in[0] ?} ,  , {? vpwr[0] ?} , {? vgnd[0] ?} ) ;
     `else
-     {?lib?}_pg_U_DFB_SETDOM #0.001 ( buf_Q , set , reset , {?CLK0?} , {?D0?} ) ;
+     {? lib ?}_pg_U_DFB_SETDOM #0.001 ( buf_Q , set , reset , {? in[1] ?} , {? in[0] ?} ) ;
     `endif 
 `else
   wire CLK_delayed;
@@ -54,48 +68,47 @@ supply0 {?vnb0?};
     
     not ( reset , RESETB_delayed ) ; 
     not ( set , SETB_delayed ) ; 
-    {?lib?}_pg_U_DFB_SETDOM_NO_pg ( buf_Q , set , reset , CLK_delayed , D_delayed , notifier , {?vpwr0?} , {?vgnd0?} ) ; 
+    {? lib ?}_pg_U_DFB_SETDOM_NO_pg ( buf_Q , set , reset , CLK_delayed , D_delayed , notifier , {? vpwr[0] ?} , {? vgnd[0] ?} ) ; 
     
   wire AWAKE;
   wire COND0;
   wire COND1;
   wire CONDB;
-    assign AWAKE = ( {?vpwr0?} === 1'b1 ) ; 
+    assign AWAKE = ( {? vpwr[0] ?} === 1'b1 ) ; 
     assign COND0 = ( AWAKE && ( RESETB_delayed === 1'b1 ) ) ; 
     assign COND1 = ( AWAKE && ( SETB_delayed === 1'b1 ) ) ; 
     assign CONDB = ( COND0 & COND1 ) ; 
 	specify
-		 ( negedge {?RESETB0?} => ( {?out0?} +: {?RESETB0?} ) ) = 0:0:0 ;   // delay is tfall
-		 ( negedge {?RESETB0?} => ( {?out1?} -: {?RESETB0?} ) ) = 0:0:0 ;  // delay is tris
+		 ( negedge {? in[3] ?} => ( {? out[0] ?} +: {? in[3] ?} ) ) = 0:0:0 ;   // delay is tfall
+		 ( negedge {? in[3] ?} => ( {? out[1] ?} -: {? in[3] ?} ) ) = 0:0:0 ;  // delay is tris
 
-		 ( {?SETB0?} => ( {?out0?} -: {?SETB0?} ) ) = ( 0:0:0 , 0:0:0 ) ;       // delay is tris , tfall
-		 ( {?SETB0?} => ( {?out1?} +: {?SETB0?} ) ) = ( 0:0:0 , 0:0:0 ) ;      // delay is tris , tfall
+		 ( {? in[2] ?} => ( {? out[0] ?} -: {? in[2] ?} ) ) = ( 0:0:0 , 0:0:0 ) ;       // delay is tris , tfall
+		 ( {? in[2] ?} => ( {? out[1] ?} +: {? in[2] ?} ) ) = ( 0:0:0 , 0:0:0 ) ;      // delay is tris , tfall
 
-		 ( posedge {?CLK0?} => ( {?out0?} +: {?D0?} ) ) = ( 0:0:0 , 0:0:0 ) ;  // delays are tris , tfall
-		 ( posedge {?CLK0?} => ( {?out1?} -: {?D0?} ) ) = ( 0:0:0 , 0:0:0 ) ; // delays are tris , tfall
+		 ( posedge {? in[1] ?} => ( {? out[0] ?} +: {? in[0] ?} ) ) = ( 0:0:0 , 0:0:0 ) ;  // delays are tris , tfall
+		 ( posedge {? in[1] ?} => ( {? out[1] ?} -: {? in[0] ?} ) ) = ( 0:0:0 , 0:0:0 ) ; // delays are tris , tfall
 	   
-    $recrem ( posedge {?SETB0?} , posedge {?CLK0?} , 0:0:0 , 0:0:0 , notifier , COND0 , COND0 , SETB_delayed , CLK_delayed ) ; 
-    $recrem ( posedge {?RESETB0?} , posedge {?CLK0?} , 0:0:0 , 0:0:0 , notifier , COND1 , COND1 , RESETB_delayed , CLK_delayed ) ; 
+    $recrem ( posedge {? in[2] ?} , posedge {? in[1] ?} , 0:0:0 , 0:0:0 , notifier , COND0 , COND0 , SETB_delayed , CLK_delayed ) ; 
+    $recrem ( posedge {? in[3] ?} , posedge {? in[1] ?} , 0:0:0 , 0:0:0 , notifier , COND1 , COND1 , RESETB_delayed , CLK_delayed ) ; 
 	   
-    $setuphold ( posedge {?CLK0?} , posedge {?D0?} , 0:0:0 , 0:0:0 , notifier , CONDB , CONDB , CLK_delayed , D_delayed ) ; 
-    $setuphold ( posedge {?CLK0?} , negedge {?D0?} , 0:0:0 , 0:0:0 , notifier , CONDB , CONDB , CLK_delayed , D_delayed ) ; 
+    $setuphold ( posedge {? in[1] ?} , posedge {? in[0] ?} , 0:0:0 , 0:0:0 , notifier , CONDB , CONDB , CLK_delayed , D_delayed ) ; 
+    $setuphold ( posedge {? in[1] ?} , negedge {? in[0] ?} , 0:0:0 , 0:0:0 , notifier , CONDB , CONDB , CLK_delayed , D_delayed ) ; 
 
 
-    $setuphold ( posedge {?SETB0?} , posedge {?RESETB0?} , 0:0:0 , 0:0:0 , notifier , AWAKE , AWAKE , SETB_delayed , RESETB_delayed  ) ;
-    $setuphold ( posedge {?RESETB0?} , posedge {?SETB0?} , 0:0:0 , 0:0:0 , notifier , AWAKE , AWAKE , RESETB_delayed , SETB_delayed  ) ;
+    $setuphold ( posedge {? in[2] ?} , posedge {? in[3] ?} , 0:0:0 , 0:0:0 , notifier , AWAKE , AWAKE , SETB_delayed , RESETB_delayed  ) ;
+    $setuphold ( posedge {? in[3] ?} , posedge {? in[2] ?} , 0:0:0 , 0:0:0 , notifier , AWAKE , AWAKE , RESETB_delayed , SETB_delayed  ) ;
 
-		$width ( negedge {?CLK0?} &&& CONDB , 1.0:1.0:1.0 , 0 , notifier ) ; 
-		$width ( posedge {?CLK0?} &&& CONDB , 1.0:1.0:1.0 , 0 , notifier ) ; 
-    $width ( negedge {?SETB0?} &&& AWAKE , 1.0:1.0:1.0 , 0 , notifier ) ; 
-    $width ( negedge {?RESETB0?} &&& AWAKE , 1.0:1.0:1.0 , 0 , notifier ) ; 
+		$width ( negedge {? in[1] ?} &&& CONDB , 1.0:1.0:1.0 , 0 , notifier ) ; 
+		$width ( posedge {? in[1] ?} &&& CONDB , 1.0:1.0:1.0 , 0 , notifier ) ; 
+    $width ( negedge {? in[2] ?} &&& AWAKE , 1.0:1.0:1.0 , 0 , notifier ) ; 
+    $width ( negedge {? in[3] ?} &&& AWAKE , 1.0:1.0:1.0 , 0 , notifier ) ; 
 	endspecify
 
    
 `endif
-  buf ( {?out0?} , buf_Q ) ; 
-  not ( {?out1?} , buf_Q ) ; 
+  buf ( {? out[0] ?} , buf_Q ) ; 
+  not ( {? out[1] ?} , buf_Q ) ; 
 
 
 endmodule
 `endcelldefine
-

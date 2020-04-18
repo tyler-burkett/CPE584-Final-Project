@@ -1,20 +1,33 @@
-{?header?}
+{#
+	DESCRIPTION
+		Positive edge triggered clock gating latch with active high enable (q only), output ECK
+	PARAMETER MAPPING
+		in[0]	:	GATE
+		in[1]	:	CLK
+		out[0]	:	GCLK
+-#}
+
+
+{? header ?}
+
+
+// manual edit to fix TMAX warnings-jfe
 
 `celldefine
-`timescale {?timescale?}
+`timescale 1ns / 1ps
 
 
-module {?lib?}_dlclkp_{?drive?}  (
-output GCLK,
+module {? lib ?}_{? name ?}_{? drive ?}  (
+output {? out[0] ?},
 
-input {?GATE0?},
-input {?CLK0?}
+input {? in[0] ?},
+input {? in[1] ?}
 
 `ifdef SC_USE_PG_PIN
-, input {?vpwr0?}
-, input {?vgnd0?}
-, input {?vpb0?}
-, input {?vnb0?}
+, input {? vpwr[0] ?}
+, input {? vgnd[0] ?}
+, input {? vpb[0] ?}
+, input {? vnb[0] ?}
 `endif
 
 );
@@ -23,10 +36,10 @@ input {?CLK0?}
 `else
 `ifdef SC_USE_PG_PIN
 `else
-supply1 {?vpwr0?};
-supply0 {?vgnd0?};
-supply1 {?vpb0?};
-supply0 {?vnb0?};
+supply1 {? vpwr[0] ?};
+supply0 {? vgnd[0] ?};
+supply1 {? vpb[0] ?};
+supply0 {? vnb[0] ?};
 `endif
 `endif
 
@@ -34,29 +47,29 @@ supply0 {?vnb0?};
   wire clkn;
 
 `ifdef functional
-  not ( clkn , {?CLK0?} ) ; 
+  not ( clkn , {? in[1] ?} ) ; 
 `ifdef SC_USE_PG_PIN
- {?lib?}_pg_U_DL_P_NO_pg  ( m0 , {?GATE0?} , clkn ,  , {?vpwr0?} , {?vgnd0?} ) ;
+ {? lib ?}_pg_U_DL_P_NO_pg  ( m0 , {? in[0] ?} , clkn ,  , {? vpwr[0] ?} , {? vgnd[0] ?} ) ;
 `else
- {?lib?}_pg_U_DL_P  ( m0 , {?GATE0?} , clkn ) ;
+ {? lib ?}_pg_U_DL_P  ( m0 , {? in[0] ?} , clkn ) ;
 `endif 
-  and ( GCLK , m0 , {?CLK0?} ) ; 
+  and ( {? out[0] ?} , m0 , {? in[1] ?} ) ; 
 
 `else
   wire CLK_delayed;
   wire GATE_delayed;
   reg notifier ; 
   not ( clkn , CLK_delayed ) ; 
-{?lib?}_pg_U_DL_P_NO_pg ( m0 , GATE_delayed , clkn , notifier , {?vpwr0?} , {?vgnd0?} ) ; 
-  and ( GCLK , m0 , CLK_delayed ) ; 
+{? lib ?}_pg_U_DL_P_NO_pg ( m0 , GATE_delayed , clkn , notifier , {? vpwr[0] ?} , {? vgnd[0] ?} ) ; 
+  and ( {? out[0] ?} , m0 , CLK_delayed ) ; 
 
   wire AWAKE;
-  assign AWAKE = ( {?vpwr0?} === 1'b1 ) ; 
+  assign AWAKE = ( {? vpwr[0] ?} === 1'b1 ) ; 
   specify
-    ( {?CLK0?} +=> GCLK ) = ( 0:0:0 , 0:0:0 ) ;                         // delays are tris , tfall
-    $width ( negedge {?CLK0?} &&& AWAKE , 1.0:1.0:1.0 , 0 , notifier ) ; 
-    $setuphold ( posedge {?CLK0?} , posedge {?GATE0?} , 0:0:0 , 0:0:0 , notifier , AWAKE , AWAKE , CLK_delayed , GATE_delayed ) ; 
-    $setuphold ( posedge {?CLK0?} , negedge {?GATE0?} , 0:0:0 , 0:0:0 , notifier , AWAKE , AWAKE , CLK_delayed , GATE_delayed ) ; 
+    ( {? in[1] ?} +=> {? out[0] ?} ) = ( 0:0:0 , 0:0:0 ) ;                         // delays are tris , tfall
+    $width ( negedge {? in[1] ?} &&& AWAKE , 1.0:1.0:1.0 , 0 , notifier ) ; 
+    $setuphold ( posedge {? in[1] ?} , posedge {? in[0] ?} , 0:0:0 , 0:0:0 , notifier , AWAKE , AWAKE , CLK_delayed , GATE_delayed ) ; 
+    $setuphold ( posedge {? in[1] ?} , negedge {? in[0] ?} , 0:0:0 , 0:0:0 , notifier , AWAKE , AWAKE , CLK_delayed , GATE_delayed ) ; 
   endspecify
 `endif
 

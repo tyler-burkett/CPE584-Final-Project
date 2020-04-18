@@ -1,23 +1,36 @@
-{?header?}
+{#
+	DESCRIPTION
+		D-Flip Flop with async set active low (q and qb)
+	PARAMETER MAPPING
+		in[0]	:	CLK
+		in[1]	:	D
+		in[2]	:	SETB
+		out[0]	:	Q
+		out[1]	:	QN
+-#}
+
+
+{? header ?}
+
 
 `celldefine
-`timescale {?timescale?}
+`timescale 1ns / 1ps
 
 
 
-module {?lib?}_dfsbp_{?drive?}  (
-output {?out0?},
-output {?out1?},
+module {? lib ?}_{? name ?}_{? drive ?}  (
+output {? out[0] ?},
+output {? out[1] ?},
 
-input {?CLK0?},
-input {?D0?},
-input {?SETB0?}
+input {? in[0] ?},
+input {? in[1] ?},
+input {? in[2] ?}
 
 `ifdef SC_USE_PG_PIN
-, input {?vpwr0?}
-, input {?vgnd0?}
-, input {?vpb0?}
-, input {?vnb0?}
+, input {? vpwr[0] ?}
+, input {? vgnd[0] ?}
+, input {? vpb[0] ?}
+, input {? vnb[0] ?}
 `endif
 
 );
@@ -26,10 +39,10 @@ input {?SETB0?}
 `else
 `ifdef SC_USE_PG_PIN
 `else
-supply1 {?vpwr0?};
-supply0 {?vgnd0?};
-supply1 {?vpb0?};
-supply0 {?vnb0?};
+supply1 {? vpwr[0] ?};
+supply0 {? vgnd[0] ?};
+supply1 {? vpb[0] ?};
+supply0 {? vnb[0] ?};
 `endif
 `endif
 
@@ -38,11 +51,11 @@ supply0 {?vnb0?};
   wire set;
 
 `ifdef functional
-  not ( set , {?SETB0?} ) ; 
+  not ( set , {? in[2] ?} ) ; 
 `ifdef SC_USE_PG_PIN
- {?lib?}_pg_U_DF_P_S_NO_pg #0.001 ( buf_Q , {?D0?} , {?CLK0?} , set ,  , {?vpwr0?} , {?vgnd0?} ) ;
+ {? lib ?}_pg_U_DF_P_S_NO_pg #0.001 ( buf_Q , {? in[1] ?} , {? in[0] ?} , set ,  , {? vpwr[0] ?} , {? vgnd[0] ?} ) ;
 `else
- {?lib?}_pg_U_DF_P_S #0.001 ( buf_Q , {?D0?} , {?CLK0?} , set ) ;
+ {? lib ?}_pg_U_DF_P_S #0.001 ( buf_Q , {? in[1] ?} , {? in[0] ?} , set ) ;
 `endif 
 `else
   reg notifier ; 
@@ -50,32 +63,32 @@ supply0 {?vnb0?};
   wire SETB_delayed;
   wire CLK_delayed;
   not ( set , SETB_delayed ) ; 
-{?lib?}_pg_U_DF_P_S_NO_pg ( buf_Q , D_delayed , CLK_delayed , set , notifier , {?vpwr0?} , {?vgnd0?} ) ; 
+{? lib ?}_pg_U_DF_P_S_NO_pg ( buf_Q , D_delayed , CLK_delayed , set , notifier , {? vpwr[0] ?} , {? vgnd[0] ?} ) ; 
 
   wire AWAKE;
   wire COND0;
   wire COND1;
-  assign AWAKE = ( {?vpwr0?} === 1'b1 ) ; 
+  assign AWAKE = ( {? vpwr[0] ?} === 1'b1 ) ; 
   assign COND0 = ( SETB_delayed === 1'b1 ) ; 
-  assign COND1 = ( {?SETB0?} === 1'b1 ) ; 
+  assign COND1 = ( {? in[2] ?} === 1'b1 ) ; 
   specify
-    ( negedge {?SETB0?} => ( {?out0?} -: {?SETB0?} ) ) = 0:0:0 ;  // delay is tris
-    ( negedge {?SETB0?} => ( {?out1?} +: {?SETB0?} ) ) = 0:0:0 ;  // delay is tris
-    ( posedge {?CLK0?} => ( {?out0?} : {?CLK0?} ) ) = ( 0:0:0 , 0:0:0 ) ; // delays are tris , tfall
-    ( posedge {?CLK0?} => ( {?out1?} : {?CLK0?} ) ) = ( 0:0:0 , 0:0:0 ) ; // delays are tris , tfall
+    ( negedge {? in[2] ?} => ( {? out[0] ?} -: {? in[2] ?} ) ) = 0:0:0 ;  // delay is tris
+    ( negedge {? in[2] ?} => ( {? out[1] ?} +: {? in[2] ?} ) ) = 0:0:0 ;  // delay is tris
+    ( posedge {? in[0] ?} => ( {? out[0] ?} : {? in[0] ?} ) ) = ( 0:0:0 , 0:0:0 ) ; // delays are tris , tfall
+    ( posedge {? in[0] ?} => ( {? out[1] ?} : {? in[0] ?} ) ) = ( 0:0:0 , 0:0:0 ) ; // delays are tris , tfall
     
-    $recrem ( posedge {?SETB0?} , posedge {?CLK0?} , 0:0:0 , 0:0:0 , notifier , AWAKE , AWAKE , SETB_delayed , CLK_delayed ) ; 
-    $setuphold ( posedge {?CLK0?} , posedge {?D0?} , 0:0:0 , 0:0:0 , notifier , COND0 , COND0 , CLK_delayed , D_delayed ) ; 
-    $setuphold ( posedge {?CLK0?} , negedge {?D0?} , 0:0:0 , 0:0:0 , notifier , COND0 , COND0 , CLK_delayed , D_delayed ) ; 
+    $recrem ( posedge {? in[2] ?} , posedge {? in[0] ?} , 0:0:0 , 0:0:0 , notifier , AWAKE , AWAKE , SETB_delayed , CLK_delayed ) ; 
+    $setuphold ( posedge {? in[0] ?} , posedge {? in[1] ?} , 0:0:0 , 0:0:0 , notifier , COND0 , COND0 , CLK_delayed , D_delayed ) ; 
+    $setuphold ( posedge {? in[0] ?} , negedge {? in[1] ?} , 0:0:0 , 0:0:0 , notifier , COND0 , COND0 , CLK_delayed , D_delayed ) ; 
     
-    $width ( posedge {?CLK0?} &&& COND1 , 1.0:1.0:1.0 , 0 , notifier ) ; 
-    $width ( negedge {?CLK0?} &&& COND1 , 1.0:1.0:1.0 , 0 , notifier ) ; 
-    $width ( negedge {?SETB0?} &&& AWAKE , 1.0:1.0:1.0 , 0 , notifier ) ; 
+    $width ( posedge {? in[0] ?} &&& COND1 , 1.0:1.0:1.0 , 0 , notifier ) ; 
+    $width ( negedge {? in[0] ?} &&& COND1 , 1.0:1.0:1.0 , 0 , notifier ) ; 
+    $width ( negedge {? in[2] ?} &&& AWAKE , 1.0:1.0:1.0 , 0 , notifier ) ; 
   endspecify
 `endif
 
-buf ( {?out0?} , buf_Q ) ; 
-not ( {?out1?} , buf_Q ) ; 
+buf ( {? out[0] ?} , buf_Q ) ; 
+not ( {? out[1] ?} , buf_Q ) ; 
 
 endmodule
 `endcelldefine
