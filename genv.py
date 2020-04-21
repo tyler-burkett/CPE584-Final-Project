@@ -25,7 +25,11 @@ if __name__ == "__main__":
     args = input_parser.parse_args()
 
     # TODO: catch and prettify error messages
-    library_spec = yaml.safe_load(vars(args)["lib_spec"])
+    try:
+        with open(vars(args)["lib_spec"]) as lib_yaml:
+            library_spec = yaml.safe_load(lib_yaml)
+    except EnvironmentError:
+        print("error: Failed to load ")
 
     # Try to load path for generic models and destination lib_directory
     # Preference:
@@ -68,10 +72,6 @@ if __name__ == "__main__":
             pass
         try:
             cell["out"] = list().append(cell["out"])
-        except KeyError:
-            pass
-        try:
-            cell["reg"] = list().append(cell["reg"])
         except KeyError:
             pass
 
