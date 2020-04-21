@@ -36,8 +36,8 @@ if __name__ == "__main__":
         generic_models_dir = vars(args)["generic_models"]
     else:
         try:
-            generic_models_dir = library_spec["generic_models"]
-        except:
+            generic_models_dir = library_spec["templates"]
+        except KeyError:
             generic_models_dir = "./templates"
 
     if vars(args)["lib_directory"] is not None:
@@ -45,7 +45,7 @@ if __name__ == "__main__":
     else:
         try:
             lib_dir = "./{}".format(library_spec["lib"])
-        except:
+        except KeyError:
             lib_dir = "./out_lib"
 
     # Copy global parameters from the lib_spec YAML
@@ -59,11 +59,21 @@ if __name__ == "__main__":
         variable_start_string="{?", variable_end_string="?}")
 
     for num, cell in enumerate(library_spec["cells"]):
-        # Make in and out an element in its own list
+        # Make in, out, reg an element in its own list
         # (they are supposed to be a list; we do not want to
         # iterate over them in this step)
-        cell["in"] = list().append(cell["in"])
-        cell["out"] = list().append(cell["out"])
+        try:
+            cell["in"] = list().append(cell["in"])
+        except KeyError:
+            pass
+        try:
+            cell["out"] = list().append(cell["out"])
+        except KeyError:
+            pass
+        try:
+            cell["reg"] = list().append(cell["reg"])
+        except KeyError:
+            pass
 
         # Turn any single scalars into a list with
         # a single element
