@@ -794,83 +794,71 @@ cells:
   drives: []
   out: [Q]
   in: [D, CP]
-  reg: [Q]
 -
   function: pg_U_DF_P_NO_pg
   name: pg_U_DF_P_NO_pg
   drives: []
   out: [Q]
   in: [D, CP, NOTIFIER, VPWR, VGND]
-  reg: [Q]
 -
   function: pg_U_DF_P_R
   name: pg_U_DF_P_R
   drives: []
   out: [Q]
   in: [D, CP, R]
-  reg: [Q]
 -
   function: pg_U_DF_P_R_NO_pg
   name: pg_U_DF_P_R_NO_pg
   drives: []
   out: [Q]
   in: [D, CP, R, NOTIFIER, VPWR, VGND]
-  reg: [Q]
 -
   function: pg_U_DF_P_S
   name: pg_U_DF_P_S
   drives: []
   out: [Q]
   in: [D, CP, S]
-  reg: [Q]
 -
   function: pg_U_DF_P_S_NO_pg
   name: pg_U_DF_P_S_NO_pg
   drives: []
   out: [Q]
   in: [D, CP, S, NOTIFIER, VPWR, VGND]
-  reg: [Q]
 -
   function: pg_U_DFB_SETDOM
   name: pg_U_DFB_SETDOM
   drives: []
   out: [Q]
   in: [S, R, CK, D]
-  reg: [Q]
 -
   function: pg_U_DFB_SETDOM_NO_pg
   name: pg_U_DFB_SETDOM_NO_pg
   drives: []
   out: [Q]
   in: [S, R, CK, D, NOTIFIER, VPWR, VGND]
-  reg: [Q]
 -
   function: pg_U_DL_P
   name: pg_U_DL_P
   drives: []
   out: [Q]
-  reg: [Q]
   in: [D, G]
 -
   function: pg_U_DL_P_NO_pg
   name: pg_U_DL_P_NO_pg
   drives: []
   out: [Q]
-  reg: [Q]
   in: [D, G, NOTIFIER, VPWR, VGND]
 -
   function: pg_U_DL_P_R
   name: pg_U_DL_P_R
   drives: []
   out: [Q]
-  reg: [Q]
   in: [D, G, R]
 -
   function: pg_U_DL_P_R_NO_pg
   name: pg_U_DL_P_R_NO_pg
   drives: []
   out: [Q]
-  reg: [Q]
   in: [D, G, R, NOTIFIER, VPWR, VGND]
 -
   function: pg_U_MUX_2_1
