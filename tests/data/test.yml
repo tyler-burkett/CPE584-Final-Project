@@ -380,11 +380,147 @@ cells:
   drives: [1]
   out: [Q] # maps to out0, out1, etc.
   in: [D, GATE] # maps to in0, in1, etc.
+-
+  function: dlygate4sd1
+  name: dlygate4sd1
+  drives: [1]
+  out: [X] # maps to out0, out1, etc.
+  in: [A] # maps to in0, in1, etc.
+-
+  function: dlygate4sd2
+  name: dlygate4sd1
+  drives: [1]
+  out: [X] # maps to out0, out1, etc.
+  in: [A] # maps to in0, in1, etc.
+-
+  function: dlygate4sd3
+  name: dlygate4sd1
+  drives: [1]
+  out: [X] # maps to out0, out1, etc.
+  in: [A] # maps to in0, in1, etc.
+-
+  function: dlymetal6s2s
+  name: dlymetal6s2s
+  drives: [1]
+  out: [X] # maps to out0, out1, etc.
+  in: [A] # maps to in0, in1, etc.
+-
+  function: dlymetal6s4s
+  name: dlymetal6s4s
+  drives: [1]
+  out: [X] # maps to out0, out1, etc.
+  in: [A] # maps to in0, in1, etc.
+-
+  function: dlymetal6s6s
+  name: dlymetal6s6s
+  drives: [1]
+  out: [X] # maps to out0, out1, etc.
+  in: [A] # maps to in0, in1, etc.
+-
+  function: ebufn
+  name: ebufn
+  drives: [1, 2, 4, 8]
+  out: [Z] # maps to out0, out1, etc.
+  in: [A, TEB] # maps to in0, in1, etc.
+-
+  function: edfxbp
+  name: edfxbp
+  drives: [1]
+  out: [Q, QN] # maps to out0, out1, etc.
+  in: [CLK, D, DE] # maps to in0, in1, etc.
+-
+  function: edfxtp
+  name: edfxtp
+  drives: [1]
+  out: [Q] # maps to out0, out1, etc.
+  in: [CLK, D, DE] # maps to in0, in1, etc.
+-
+  function: einvn
+  name: einvn
+  drives: [0, 1, 2, 4, 8]
+  out: [Z] # maps to out0, out1, etc.
+  in: [A, TEB] # maps to in0, in1, etc.
+-
+  function: einvp
+  name: einvp
+  drives: [1, 2, 4, 8]
+  out: [Z] # maps to out0, out1, etc.
+  in: [A, TE] # maps to in0, in1, etc.
+-
+  function: fa
+  name: fa
+  drives: [1, 2, 4]
+  out: [COUT, SUM] # maps to out0, out1, etc.
+  in: [A, B, CIN] # maps to in0, in1, etc.
+-
+  function: fah
+  name: fah
+  drives: [1]
+  out: [COUT, SUM] # maps to out0, out1, etc.
+  in: [A, B, CI] # maps to in0, in1, etc.
+-
+  function: fahcin
+  name: fahcin
+  drives: [1]
+  out: [COUT, SUM] # maps to out0, out1, etc.
+  in: [A, B, CIN] # maps to in0, in1, etc.
+-
+  function: fahcon
+  name: fahcon
+  drives: [1]
+  out: [COUTN, SUM] # maps to out0, out1, etc.
+  in: [A, B, CI] # maps to in0, in1, etc.
+-
+  function: ha
+  name: ha
+  drives: [1, 2, 4]
+  out: [COUT, SUM] # maps to out0, out1, etc.
+  in: [A, B] # maps to in0, in1, etc.
+-
+  function: inv
+  name: inv
+  drives: [1, 2, 4, 6, 8, 12, 16]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A] # maps to in0, in1, etc.
 
 
+# This is where the ipflow_ starts, I didn't do any of these because we were told not to.
+
+# Room for ipflow configs if needed between these two comments
 
 
+- # ***
+  function: macro_sparecell  #Not sure if we need this or not
+  name: macro_sparecell
+  drives: []
+  out: [LO] # maps to out0, out1, etc.
+  in: [] # maps to in0, in1, etc.
+  # ***
 
+-
+  function: maj3
+  name: maj3
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A, B, C] # maps to in0, in1, etc.
+-
+  function: mux2
+  name: mux2
+  drives: [1, 2, 4, 8]
+  out: [X] # maps to out0, out1, etc.
+  in: [A0, A1, S] # maps to in0, in1, etc.
+-
+  function: mux2i
+  name: mux2i
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A0, A1, S] # maps to in0, in1, etc.
+-
+  function: mux4
+  name: mux4
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A0, A1, A2, A3, S0, S1] # maps to in0, in1, etc.
 
 
 #provided to us by Brian Evans 
@@ -394,9 +530,515 @@ cells:
   drives: [1, 2, 4, 8]
   out: [Y] # maps to out0, out1, etc.
   in: [A, B] # maps to in0, in1, etc.
+#
+-
+  function: nand2b
+  name: nand2b
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [AN, B] # maps to in0, in1, etc.
+-
+  function: nand3
+  name: nand3
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A, B, C] # maps to in0, in1, etc.
+-
+  function: nand3b
+  name: nand3b
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [AN, B, C] # maps to in0, in1, etc.
+-
+  function: nand4
+  name: nand4
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A, B, C, D] # maps to in0, in1, etc.
+-
+  function: nand4b
+  name: nand4b
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [AN, B, C, D] # maps to in0, in1, etc.
+-
+  function: nand4bb
+  name: nand4bb
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [AN, BN, C, D] # maps to in0, in1, etc.
+-
+  function: nor2
+  name: nor2
+  drives: [1, 2, 4, 8]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A, B] # maps to in0, in1, etc.
+-
+  function: nor2b
+  name: nor2b
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A, BN] # maps to in0, in1, etc.
+-
+  function: nor3
+  name: nor3
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A, B, C] # maps to in0, in1, etc.
+-
+  function: nor3b
+  name: nor3b
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A, B, CN] # maps to in0, in1, etc.
+-
+  function: nor4
+  name: nor4
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A, B, C, D] # maps to in0, in1, etc
+-
+  function: nor4b
+  name: nor4b
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A, B, C, DN] # maps to in0, in1, etc.
+-
+  function: nor4bb
+  name: nor4bb
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A, B, CN, DN] # maps to in0, in1, etc.
+-
+  function: o2bb2a
+  name: o2bb2a
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A1N, A2N, B1, B2] # maps to in0, in1, etc.
+-
+  function: o2bb2ai
+  name: o2bb2ai
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1N, A2N, B1, B2] # maps to in0, in1, etc.
+-
+  function: o21a
+  name: o21a
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A1, A2, B1] # maps to in0, in1, etc.
+-
+  function: o21ai
+  name: o21ai
+  drives: [0, 1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1, A2, B1] # maps to in0, in1, etc.
+-
+  function: o21ba
+  name: o21ba
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A1, A2, B1N] # maps to in0, in1, etc.
+-
+  function: o21bai
+  name: o21bai
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1, A2, B1N] # maps to in0, in1, etc.
+-
+  function: o22a
+  name: o22a
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A1, A2, B1, B2] # maps to in0, in1, etc.
+-
+  function: o22ai
+  name: o22ai
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1, A2, B1, B2] # maps to in0, in1, etc.
+-
+  function: o31a
+  name: o31a
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A1, A2, A3, B1] # maps to in0, in1, etc.
+-
+  function: o31ai
+  name: o31ai
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1, A2, A3, B1] # maps to in0, in1, etc.
+-
+  function: o32a
+  name: o32a
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A1, A2, A3, B1, B2] # maps to in0, in1, etc.
+-
+  function: o32ai
+  name: o32ai
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1, A2, A3, B1, B2] # maps to in0, in1, etc.
+-
+  function: o41a
+  name: o41a
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A1, A2, A3, A4, B1] # maps to in0, in1, etc.
+-
+  function: o41ai
+  name: o41ai
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1, A2, A3, A4, B1] # maps to in0, in1, etc.
+-
+  function: o211a
+  name: o211a
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A1, A2, B1, C1] # maps to in0, in1, etc.
+-
+  function: o211ai
+  name: o211ai
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1, A2, B1, C1] # maps to in0, in1, etc.
+-
+  function: o221a
+  name: o221a
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A1, A2, B1, B2, C1] # maps to in0, in1, etc.
+-
+  function: o221ai
+  name: o221ai
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1, A2, B1, B2, C1] # maps to in0, in1, etc.
+-
+  function: o311a
+  name: o311a
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A1, A2, A3, B1, C1] # maps to in0, in1, etc.
+-
+  function: o311ai
+  name: o311ai
+  drives: [0, 1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1, A2, A3, B1, C1] # maps to in0, in1, etc.
+-
+  function: o2111a
+  name: o2111a
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A1, A2, B1, C1, D1] # maps to in0, in1, etc.
+-
+  function: o2111ai
+  name: o2111ai
+  drives: [1, 2, 4]
+  out: [Y] # maps to out0, out1, etc.
+  in: [A1, A2, B1, C1, D1] # maps to in0, in1, etc.
+-
+  function: or2
+  name: or2
+  drives: [0, 1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A, B] # maps to in0, in1, etc.
+-
+  function: or2b
+  name: or2b
+  drives: [1, 2, 4]
+  out: [X] # maps to out0, out1, etc.
+  in: [A, BN] # maps to in0, in1, etc.
+
+#provided to us by Brian Evans 
 -
   function: or3
   name: or3
+  drives: [1, 2, 4]
+  out: [X]
+  in: [A, B, C]
+#
+-
+  function: or3b
+  name: or3b
+  drives: [1, 2, 4]
+  out: [X]
+  in: [A, B, CN]
+-
+  function: or4
+  name: or4
+  drives: [1, 2, 4]
+  out: [X]
+  in: [A, B, C, D]
+-
+  function: or4b
+  name: or4b
+  drives: [1, 2, 4]
+  out: [X]
+  in: [A, B, C, DN]
+-
+  function: or4bb
+  name: or4bb
+  drives: [1, 2, 4]
+  out: [X]
+  in: [A, B, CN, DN]
+
+# Start of the pg_..
+-
+  function: pg_U_DF_P
+  name: pg_U_DF_P
+  drives: []
+  out: [Q]
+  in: [D, CP]
+  reg: [Q]
+-
+  function: pg_U_DF_P_NO_pg
+  name: pg_U_DF_P_NO_pg
+  drives: []
+  out: [Q]
+  in: [D, CP, NOTIFIER, VPWR, VGND]
+  reg: [Q]
+-
+  function: pg_U_DF_P_R
+  name: pg_U_DF_P_R
+  drives: []
+  out: [Q]
+  in: [D, CP, R]
+  reg: [Q]
+-
+  function: pg_U_DF_P_R_NO_pg
+  name: pg_U_DF_P_R_NO_pg
+  drives: []
+  out: [Q]
+  in: [D, CP, R, NOTIFIER, VPWR, VGND]
+  reg: [Q]
+-
+  function: pg_U_DF_P_S
+  name: pg_U_DF_P_S
+  drives: []
+  out: [Q]
+  in: [D, CP, S]
+  reg: [Q]
+-
+  function: pg_U_DF_P_S_NO_pg
+  name: pg_U_DF_P_S_NO_pg
+  drives: []
+  out: [Q]
+  in: [D, CP, S, NOTIFIER, VPWR, VGND]
+  reg: [Q]
+-
+  function: pg_U_DFB_SETDOM
+  name: pg_U_DFB_SETDOM
+  drives: []
+  out: [Q]
+  in: [S, R, CK, D]
+  reg: [Q]
+-
+  function: pg_U_DFB_SETDOM_NO_pg
+  name: pg_U_DFB_SETDOM_NO_pg
+  drives: []
+  out: [Q]
+  in: [S, R, CK, D, NOTIFIER, VPWR, VGND]
+  reg: [Q]
+-
+  function: pg_U_DL_P
+  name: pg_U_DL_P
+  drives: []
+  out: [Q]
+  reg: [Q]
+  in: [D, G]
+-
+  function: pg_U_DL_P_NO_pg
+  name: pg_U_DL_P_NO_pg
+  drives: []
+  out: [Q]
+  reg: [Q]
+  in: [D, G, NOTIFIER, VPWR, VGND]
+-
+  function: pg_U_DL_P_R
+  name: pg_U_DL_P_R
+  drives: []
+  out: [Q]
+  reg: [Q]
+  in: [D, G, R]
+-
+  function: pg_U_DL_P_R_NO_pg
+  name: pg_U_DL_P_R_NO_pg
+  drives: []
+  out: [Q]
+  reg: [Q]
+  in: [D, G, R, NOTIFIER, VPWR, VGND]
+-
+  function: pg_U_MUX_2_1
+  name: pg_U_MUX_2_1
+  drives: []
+  out: [X]
+  in: [A0, A1, S]
+-
+  function: pg_U_MUX_2_1_INV
+  name: pg_U_MUX_2_1_INV
+  drives: []
+  out: [Y]
+  in: [A0, A1, S]
+-
+  function: pg_U_MUX_4_2
+  name: pg_U_MUX_4_2
+  drives: []
+  in: [A0, A1, A2, A3, S0, S1]
+  out: [X]
+-
+  function: pg_U_VGND
+  name: pg_U_VGND
+  drives: []
+  out: [UDP_OUT]
+  in: [UDP_IN, VGND]
+-
+  function: pg_U_VPWR
+  name: pg_U_VPWR
+  drives: []
+  out: [UDP_OUT]
+  in: [UDP_IN, VPWR]
+-
+  function: pg_U_VPWR_VGND
+  name: pg_U_VPWR_VGND
+  drives: []
+  out: [UDP_OUT]
+  in: [UDP_IN, VPWR, VGND]
+# End of pg_...
+
+-
+  function: probe_s8p_8
+  name: probe_s8p_8
+  drives: []
+  out: [X]
+  in: [A]
+-
+  function: probec_s8p_8
+  name: probec_s8p_8
+  drives: []
+  out: [X]
+  in: [A]
+-
+  function: sdfbbn
+  name: sdfbbn
+  drives: [1, 2]
+  out: [Q, QN]
+  in: [D, SCD, SCE, CLKN, SETB, RESETB]
+-
+  function: sdfbbp
+  name: sdfbbp
+  drives: [1]
+  out: [Q, QN]
+  in: [D, SCD, SCE, CLK, SETB, RESETB]
+-
+  function: sdfrbp
+  name: sdfrbp
+  drives: [1, 2]
+  out: [Q, QN]
+  in: [CLK, D, SCD, SCE, RESETB]
+-
+  function: sdfrtn
+  name: sdfrtn
+  drives: [1]
+  out: [Q, QN]
+  in: [CLKN, D, SCD, SCE, RESETB]
+-
+  function: sdfrtp
+  name: sdfrtp
+  drives: [1, 2, 4]
+  out: [Q]
+  in: [CLK, D, SCD, SCE, RESETB]
+-
+  function: sdfsbp
+  name: sdfsbp
+  drives: [1, 2]
+  out: [Q, QN]
+  in: [CLK, D, SCD, SCE, SETB]
+-
+  function: sdfstp
+  name: sdfstp
+  drives: [1, 2, 4]
+  out: [Q]
+  in: [CLK, D, SCD, SCE, SETB]
+-
+  function: sdfxbp
+  name: sdfxbp
+  drives: [1, 2]
+  out: [Q, QN]
+  in: [CLK, D, SCD, SCE]
+-
+  function: sdfxtp
+  name: sdfxtp
+  drives: [1, 2, 4]
+  out: [Q]
+  in: [CLK, D, SCD, SCE]
+-
+  function: sdlclkp
+  name: sdlclkp
+  drives: [1, 2, 4]
+  out: [GCLK]
+  in: [SCE, GATE, CLK]
+-
+  function: sedfxbp
+  name: sedfxbp
+  drives: [1, 2]
+  out: [Q, QN]
+  in: [CLK, D, DE, SCD, SCE]
+-
+  function: sedfxtp
+  name: sedfxtp
+  drives: [1, 2, 4]
+  out: [Q]
+  in: [CLK, D, DE, SCD, SCE]
+-
+  function: tap
+  name: tap
+  drives: [1, 2]
+  out: []
+  in: []
+-
+  function: tapvgnd
+  name: tapvgnd
+  drives: [1]
+  out: []
+  in: []
+-
+  function: tapvgnd2
+  name: tapvgnd2
+  drives: [1]
+  out: []
+  in: []
+-
+  function: tapvpwrvgnd
+  name: tapvpwrvgnd
+  drives: [1]
+  out: []
+  in: []
+-
+  function: xnor2
+  name: xnor2
+  drives: [1, 2, 4]
+  out: [Y]
+  in: [A, B]
+-
+  function: xnor3
+  name: xnor3
+  drives: [1, 2, 4]
+  out: [X]
+  in: [A, B, C]
+-
+  function: xor2
+  name: xor2
+  drives: [1, 2, 4]
+  out: [X]
+  in: [A, B]
+-
+  function: xor3
+  name: xor3
   drives: [1, 2, 4]
   out: [X]
   in: [A, B, C]
