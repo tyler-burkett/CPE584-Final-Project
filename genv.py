@@ -44,8 +44,6 @@ if __name__ == "__main__":
         lib_dir = vars(args)["lib_directory"]
     else:
         try:
-            lib_dir = library_spec["lib_directory"]
-        except:
             lib_dir = "./{}".format(library_spec["lib"])
         except:
             lib_dir = "./out_lib"
