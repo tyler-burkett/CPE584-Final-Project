@@ -899,15 +899,15 @@ cells:
 # End of pg_...
 
 -
-  function: probe_s8p_8
-  name: probe_s8p_8
-  drives: []
+  function: probe_s8p
+  name: probe_s8p
+  drives: [8]
   out: [X]
   in: [A]
 -
-  function: probec_s8p_8
-  name: probec_s8p_8
-  drives: []
+  function: probec_s8p
+  name: probec_s8p
+  drives: [8]
   out: [X]
   in: [A]
 -
