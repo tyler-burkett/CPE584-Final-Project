@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python
 
 import jinja2
 import jinja2.meta
@@ -91,7 +91,7 @@ if __name__ == "__main__":
         # check for missing parameters by loading the template specifed in "function"
         # and checking all the keys in the final template dict match variables in the
         # template
-        precheck_set = {*global_dict.keys(), *cell_keys}
+        precheck_set = set(global_dict.keys()) | set(cell_keys)
         template_file = cell["function"][0] + ".v"
         try:
             variables = get_variables(env, template_file)
@@ -125,7 +125,8 @@ if __name__ == "__main__":
 
             # Combine global dict and a specfic combination of paramters into None
             # dictionary
-            template_dict = {**global_dict, **dict(zip(cell_keys, combination))}
+            template_dict = global_dict.copy()
+            template_dict.update(dict(zip(cell_keys, combination)))
 
             # Load template
             template = env.get_template(template_file)
@@ -138,7 +139,7 @@ if __name__ == "__main__":
             else:
                 # create a seperate .v file for the new cell
                 search_result = re.search(r"module ([\d\w]*)", templating_result)
-                file_name = search_result[1] + ".v"
+                file_name = search_result.group(1) + ".v"
 
             # Open file and write the templating results to it
 
