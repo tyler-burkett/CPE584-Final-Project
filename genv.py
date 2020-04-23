@@ -5,7 +5,7 @@ import jinja2.meta
 import yaml
 import argparse
 import itertools
-import os
+import os, sys
 import re
 
 def get_variables(env, template_file):
@@ -29,7 +29,8 @@ if __name__ == "__main__":
         with open(vars(args)["lib_spec"]) as lib_yaml:
             library_spec = yaml.safe_load(lib_yaml)
     except EnvironmentError:
-        print("error: Failed to load ")
+        print("error: Failed to load config YAML")
+        sys.exit(1)
 
     # Try to load path for generic models and destination lib_directory
     # Preference:
@@ -48,14 +49,17 @@ if __name__ == "__main__":
         lib_dir = vars(args)["lib_directory"]
     else:
         try:
-            lib_dir = "./{}".format(library_spec["lib"])
+            lib_dir = "./{}/".format(library_spec["lib"])
         except KeyError:
-            lib_dir = "./out_lib"
+            lib_dir = "./out_lib/"
 
     # Copy global parameters from the lib_spec YAML
+    single_elements = {"lib", "header"}
     global_dict = dict()
     for key, value in library_spec.items():
-        if key != "cells":
+        if key != "cells" and key not in single_elements:
+                global_dict[key] = [value]
+        elif key in single_elements:
             global_dict[key] = value
 
     # Start jinja2
@@ -67,18 +71,18 @@ if __name__ == "__main__":
         # (they are supposed to be a list; we do not want to
         # iterate over them in this step)
         try:
-            cell["in"] = list().append(cell["in"])
+            cell["in"] = [cell["in"]]
         except KeyError:
             pass
         try:
-            cell["out"] = list().append(cell["out"])
+            cell["out"] = [cell["out"]]
         except KeyError:
             pass
 
         # Turn any single scalars into a list with
         # a single element
         for key in cell.keys():
-            if not isinstance(value, list):
+            if not isinstance(cell[key], list):
                 cell[key] = [cell[key]]
 
         cell_keys = cell.keys()
@@ -87,8 +91,8 @@ if __name__ == "__main__":
         # check for missing parameters by loading the template specifed in "function"
         # and checking all the keys in the final template dict match variables in the
         # template
-        precheck_dict = {*global_dict.keys(), cell_keys}
-        template_file = cell["function"] + ".v"
+        precheck_set = {*global_dict.keys(), *cell_keys}
+        template_file = cell["function"][0] + ".v"
         try:
             variables = get_variables(env, template_file)
         except jinja2.exceptions.TemplatesNotFound:
@@ -96,10 +100,10 @@ if __name__ == "__main__":
             print("error: unknown function {} found in cell# {}".format(str(cell["function"]), str(num)))
             continue
 
-        complete_vars = all(var in precheck_dict.keys() for var in variables)
+        complete_vars = all(var in precheck_set for var in variables)
         if not complete_vars:
             # If variables are missing, skip the cell and move on
-            missing_vars = set(var not in precheck_dict.keys() for var in variables)
+            missing_vars = set(var for var in variables if var not in precheck_set)
             print("error: missing the following variables {} for cell# {}".format(str(missing_vars), str(num)))
             continue
 
@@ -133,10 +137,23 @@ if __name__ == "__main__":
                 file_name = "{}.v".format(library_spec["lib"])
             else:
                 # create a seperate .v file for the new cell
-                match = re.match(r"module ([\d\w]*) ", templating_result)
-                file_name = match[1] + ".v"
+                search_result = re.search(r"module ([\d\w]*)", templating_result)
+                file_name = search_result[1] + ".v"
 
             # Open file and write the templating results to it
+
+            # Try to create directory on first write
+            if not os.path.exists(lib_dir):
+                try:
+                    os.mkdir(lib_dir)
+                except EnvironmentError:
+                    print("error: failed to open directory for output library")
+                    sys.exit(1)
+            # Either write or append depending on single-file setting
             file_path = os.path.join(lib_dir, file_name)
-            with open(file_path, "a") as file:
-                file.write(templating_result)
+            if vars(args)["1_file"] is True:
+                with open(file_path, "a") as file:
+                    file.write(templating_result)
+            else:
+                with open(file_path, "w") as file:
+                    file.write(templating_result)
