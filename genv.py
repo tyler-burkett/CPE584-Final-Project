@@ -139,7 +139,7 @@ if __name__ == "__main__":
             else:
                 # create a seperate .v file for the new cell
                 search_result = re.search(r"module ([\d\w]*)", templating_result)
-                file_name = search_result[1] + ".v"
+                file_name = search_result.group(1) + ".v"
 
             # Open file and write the templating results to it
 
