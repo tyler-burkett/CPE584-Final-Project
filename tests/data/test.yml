@@ -1,6 +1,15 @@
 # Global mappings
 lib: scs8hd
-header: ""
+header: "// Automatically edited by removePhraseFromMultipleFiles.pl
+\n// iptguser	Tue Aug 23 13:13:19 EDT 2011
+\n// \\`suppress_faults;^\\n
+\n// \\`ifdef TETRAMAX;^\\n
+\n// \\`ifdef functional;\\`else
+\n// \\`delay_mode_path;^\\n
+\n// \\`disable_portfaults;\\`nosuppress_faults
+\n
+\n// Automatically modified by replacePGwithIfDef.pl
+\n// iptguser	Tue Aug 23 12:32:33 EDT 2011"
 vpwr: vpwr
 vgnd: vgnd
 vpb: vpb
