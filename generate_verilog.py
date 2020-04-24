@@ -16,9 +16,7 @@ def get_variables(env, template_file):
     return jinja2.meta.find_undeclared_variables(parsed)
 
 if __name__ == "__main__":
-    description = """
-    Generate a specific Verilog library, using templates and a library specification YAML file from stdin.
-    """
+    description = "Generate a vendor-specific Verilog library, using templates and a library specification YAML file."
     epilog = """
     The provided YAML should look like the following:
 
@@ -44,15 +42,15 @@ if __name__ == "__main__":
     nargs=1, help="specify location of Verilog templates (default: ./templates)")
 
     input_parser.add_argument("-d", "--library_directory", metavar="OUTPUT_DIR",
-    nargs=1, help="specify destination directory of output Verilog file(s) (default: ./<library_name>)")
+    nargs=1, help="specify directory to create vendor-specific library in (default: ./)")
 
     input_parser.add_argument("-m", "--multi_file", action="store_true",
     help="store each output Verilog module in it's own file, rather than palcing all of them into one")
 
-    yaml_help = """
-    the library specification YAML containing specifications for the Verilog library you want to generate.
-    Can be either a path to a YAML file or
-    """
+    yaml_help = \
+"""the YAML containing specifications for the vendor-specfic Verilog library you want to generate
+Can be either a file path or YAML-formatted text directly from standard input
+"""
     input_parser.add_argument("library_spec", nargs="?", default=sys.stdin,
     help=yaml_help)
 
@@ -78,12 +76,13 @@ if __name__ == "__main__":
     # 2) global parameter in loaded YAML
     # 3) Default
     if vars(args)["templates_directory"] is not None:
-        templates_dir = vars(args)["templates_directory"]
+        templates_dir = vars(args)["templates_directory"][0]
     else:
         templates_dir = "./templates"
 
     if vars(args)["library_directory"] is not None:
-        lib_dir = vars(args)["library_directory"]
+        lib_dir = os.path.join(vars(args)["library_directory"][0] + os.sep, "{}/".format(library_spec["lib"]))
+        lib_dir = os.path.normpath(lib_dir)
     else:
         try:
             lib_dir = "./{}/".format(library_spec["lib"])
@@ -96,7 +95,7 @@ if __name__ == "__main__":
     global_dict = dict()
     for key, value in library_spec.items():
         if key != "cells" and key not in single_elements:
-                global_dict[key] = [value]
+            global_dict[key] = [value]
         elif key in single_elements:
             global_dict[key] = value
 
