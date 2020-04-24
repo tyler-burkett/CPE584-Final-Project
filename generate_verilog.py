@@ -5,8 +5,10 @@ import jinja2.meta
 import yaml
 import argparse
 import itertools
-import os, sys
+import os
+import sys
 import re
+import warnings
 
 def get_variables(env, template_file):
     src = env.loader.get_source(env, template_file)
@@ -14,46 +16,82 @@ def get_variables(env, template_file):
     return jinja2.meta.find_undeclared_variables(parsed)
 
 if __name__ == "__main__":
-    input_parser = argparse.ArgumentParser(description="Generate a specific Verilog library, based on generic model templates from a YAML file.")
-    input_parser.add_argument("-g", "--generic_models", metavar="GEN_DIR",
-    nargs=1, help="specify location of generic Verilog models")
-    input_parser.add_argument("-d", "--lib_directory", metavar="DIR",
-    nargs=1, help="specify destination directory of specific Verilog models")
-    input_parser.add_argument("-1", "--1-file", action="store_true", help="make output of template go to a single library file rather than individual files")
-    input_parser.add_argument("lib_spec", help="the YAML file containing specifications for the library")
+    description = """
+    Generate a specific Verilog library, using templates and a library specification YAML file from stdin.
+    """
+    epilog = """
+    The provided YAML should look like the following:
+
+    lib: <library_name>
+    header: <header_comment>
+    vpwr: <power_pin_name> | [<power_pin_name>,...]
+    vgnd: <ground_pin_name> | [<ground_pin_name>,...]
+    vpb: <power_pin_name> | [<power_pin_name>,...]
+    vnb: <power_pin_name> | [<power_pin_name>,...]
+    cells:
+    -
+      function: <function_name>
+      name: <module_name>
+      drive: <drive_value> | [<drive_values>]
+      out: [<output_pin_name>, ...]
+      in: [<input_pin_name>, ...]
+    ...
+
+    """
+    input_parser = argparse.ArgumentParser(description=description, epilog=epilog, formatter_class=argparse.RawTextHelpFormatter)
+
+    input_parser.add_argument("-t", "--templates_directory", metavar="TEMPLATE_DIR",
+    nargs=1, help="specify location of Verilog templates (default: ./templates)")
+
+    input_parser.add_argument("-d", "--library_directory", metavar="OUTPUT_DIR",
+    nargs=1, help="specify destination directory of output Verilog file(s) (default: ./<library_name>)")
+
+    input_parser.add_argument("-m", "--multi_file", action="store_true",
+    help="store each output Verilog module in it's own file, rather than palcing all of them into one")
+
+    yaml_help = """
+    the library specification YAML containing specifications for the Verilog library you want to generate.
+    Can be either a path to a YAML file or
+    """
+    input_parser.add_argument("library_spec", nargs="?", default=sys.stdin,
+    help=yaml_help)
 
     args = input_parser.parse_args()
 
-    # TODO: catch and prettify error messages
+    # Take the YAML file (either from stdin or file) and try to load it
     try:
-        with open(vars(args)["lib_spec"]) as lib_yaml:
-            library_spec = yaml.safe_load(lib_yaml)
+        if isinstance(vars(args)["library_spec"], str) and os.path.exists(vars(args)["library_spec"]):
+            with open(vars(args)["library_spec"]) as yaml_file:
+                library_spec = yaml.safe_load(yaml_file)
+        else:
+            library_spec = yaml.safe_load(vars(args)["library_spec"])
+            if not isinstance(library_spec, dict):
+                sys.stderr.write("error: invalid YAML or path provided\n")
+                sys.exit(1)
     except EnvironmentError:
-        print("error: Failed to load config YAML")
+        sys.stderr.write("error: Failed to load config YAML\n")
         sys.exit(1)
 
-    # Try to load path for generic models and destination lib_directory
+    # Try to load path for generic models and destination library directory
     # Preference:
     # 1) passed in args
     # 2) global parameter in loaded YAML
     # 3) Default
-    if vars(args)["generic_models"] is not None:
-        generic_models_dir = vars(args)["generic_models"]
+    if vars(args)["templates_directory"] is not None:
+        templates_dir = vars(args)["templates_directory"]
     else:
-        try:
-            generic_models_dir = library_spec["templates"]
-        except KeyError:
-            generic_models_dir = "./templates"
+        templates_dir = "./templates"
 
-    if vars(args)["lib_directory"] is not None:
-        lib_dir = vars(args)["lib_directory"]
+    if vars(args)["library_directory"] is not None:
+        lib_dir = vars(args)["library_directory"]
     else:
         try:
             lib_dir = "./{}/".format(library_spec["lib"])
         except KeyError:
-            lib_dir = "./out_lib/"
+            sys.stderr.write("error: library not specified in provided library specification\n")
+            sys.exit(1)
 
-    # Copy global parameters from the lib_spec YAML
+    # Copy global parameters from the library specification YAML
     single_elements = {"lib", "header"}
     global_dict = dict()
     for key, value in library_spec.items():
@@ -63,7 +101,7 @@ if __name__ == "__main__":
             global_dict[key] = value
 
     # Start jinja2
-    env = jinja2.Environment(loader=jinja2.FileSystemLoader(generic_models_dir),
+    env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_dir),
         variable_start_string="{?", variable_end_string="?}")
 
     for num, cell in enumerate(library_spec["cells"]):
@@ -97,14 +135,14 @@ if __name__ == "__main__":
             variables = get_variables(env, template_file)
         except jinja2.exceptions.TemplatesNotFound:
             # Unknown function given in cell; print error and skip to next cell
-            print("error: unknown function {} found in cell# {}".format(str(cell["function"]), str(num)))
+            sys.stderr.write("warning: unknown function {} found in cell# {}; skipping\n".format(str(cell["function"]), str(num)))
             continue
 
         complete_vars = all(var in precheck_set for var in variables)
         if not complete_vars:
             # If variables are missing, skip the cell and move on
             missing_vars = set(var for var in variables if var not in precheck_set)
-            print("error: missing the following variables {} for cell# {}".format(str(missing_vars), str(num)))
+            sys.stderr.write("warning: missing the following variables {} for cell# {}; skipping\n".format(str(missing_vars), str(num)))
             continue
 
         # Calculate the cross product of the parameters in the cell
@@ -133,7 +171,7 @@ if __name__ == "__main__":
 
             templating_result = template.render(template_dict)
 
-            if vars(args)["1_file"] is True:
+            if not vars(args)["multi_file"]:
                 # append the results to one big library file
                 file_name = "{}.v".format(library_spec["lib"])
             else:
@@ -148,11 +186,11 @@ if __name__ == "__main__":
                 try:
                     os.mkdir(lib_dir)
                 except EnvironmentError:
-                    print("error: failed to open directory for output library")
+                    sys.stderr.write("error: failed to open directory for output library\n")
                     sys.exit(1)
-            # Either write or append depending on single-file setting
+            # Either write or append depending on multi-file setting
             file_path = os.path.join(lib_dir, file_name)
-            if vars(args)["1_file"] is True:
+            if not vars(args)["multi_file"]:
                 with open(file_path, "a") as file:
                     file.write(templating_result)
             else:
