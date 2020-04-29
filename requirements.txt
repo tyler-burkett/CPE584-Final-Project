@@ -1,4 +1,4 @@
-argparse
+argparse;python_version<"2.7"
 pyyaml
 future
 jinja2

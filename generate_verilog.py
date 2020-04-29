@@ -8,12 +8,13 @@ import itertools
 import os
 import sys
 import re
-import warnings
+
 
 def get_variables(env, template_file):
     src = env.loader.get_source(env, template_file)
     parsed = env.parse(src)
     return jinja2.meta.find_undeclared_variables(parsed)
+
 
 if __name__ == "__main__":
     description = "Generate a vendor-specific Verilog library, using templates and a library specification YAML file."
@@ -58,11 +59,23 @@ Can be either a file path or YAML-formatted text directly from standard input
 
     # Take the YAML file (either from stdin or file) and try to load it
     try:
+        # Input is valid file path; try to load it and read in a YAML object
         if isinstance(vars(args)["library_spec"], str) and os.path.exists(vars(args)["library_spec"]):
             with open(vars(args)["library_spec"]) as yaml_file:
                 library_spec = yaml.safe_load(yaml_file)
+
+        # Input is either a string or stdin
         else:
+            # Check to make sure stdin was given something
+            if vars(args)["library_spec"] is sys.stdin and sys.stdin.isatty():
+                sys.stderr.write("error: expected YAML string or path to YAML file\n")
+                sys.exit(1)
+
+            # Load string/string from stdin
             library_spec = yaml.safe_load(vars(args)["library_spec"])
+
+            # Do basic check to make sure the result is at least a dictionary
+            # (e.x. a bad file path might get here and be loaded as a string)
             if not isinstance(library_spec, dict):
                 sys.stderr.write("error: invalid YAML or path provided\n")
                 sys.exit(1)
@@ -184,7 +197,7 @@ Can be either a file path or YAML-formatted text directly from standard input
             if not os.path.exists(lib_dir):
                 try:
                     os.mkdir(lib_dir)
-                except EnvironmentError:
+                except EnvironmentError as e:
                     sys.stderr.write("error: failed to open directory for output library\n")
                     sys.exit(1)
             # Either write or append depending on multi-file setting
