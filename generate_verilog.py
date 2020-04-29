@@ -11,6 +11,7 @@ import re
 
 
 def get_variables(env, template_file):
+    """Get names of variables out of the template."""
     src = env.loader.get_source(env, template_file)
     parsed = env.parse(src)
     return jinja2.meta.find_undeclared_variables(parsed)
@@ -79,6 +80,7 @@ Can be either a file path or YAML-formatted text directly from standard input
             if not isinstance(library_spec, dict):
                 sys.stderr.write("error: invalid YAML or path provided\n")
                 sys.exit(1)
+
     except EnvironmentError:
         sys.stderr.write("error: Failed to load config YAML\n")
         sys.exit(1)
@@ -112,31 +114,21 @@ Can be either a file path or YAML-formatted text directly from standard input
         elif key in single_elements:
             global_dict[key] = value
 
-    # Start jinja2
+    # Startup jinja2 templating environment
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_dir),
         variable_start_string="{?", variable_end_string="?}")
 
     for num, cell in enumerate(library_spec["cells"]):
-        # Make in, out, reg an element in its own list
+        # Make in, out lists an element in its own list
         # (they are supposed to be a list; we do not want to
-        # iterate over them in this step)
-        try:
-            cell["in"] = [cell["in"]]
-        except KeyError:
-            pass
-        try:
-            cell["out"] = [cell["out"]]
-        except KeyError:
-            pass
-
-        # Turn any single scalars into a list with
-        # a single element
+        # iterate over the items in them).
+        # Put any other single elements into a list to iterate over
+        list_cell_names = {"in", "out"}
         for key in cell.keys():
-            if not isinstance(cell[key], list):
+            if key in list_cell_names or not isinstance(cell[key], list):
                 cell[key] = [cell[key]]
 
         cell_keys = cell.keys()
-        cell_values = cell.values()
 
         # check for missing parameters by loading the template specifed in "function"
         # and checking all the keys in the final template dict match variables in the
@@ -171,18 +163,21 @@ Can be either a file path or YAML-formatted text directly from standard input
         # (name: a2bb2o, drives: 2, out: [X], in: [A1N, A2N, B1, B2]),
         # (name: a2bb2o, drives: 4, out: [X], in: [A1N, A2N, B1, B2]),
         # }
+        cell_values = cell.values()
         for combination in itertools.product(*cell_values):
 
-            # Combine global dict and a specfic combination of paramters into None
-            # dictionary
+            # Combine global dictionary and a specfic combination of paramters into
+            # a dictionary to use for templating
             template_dict = global_dict.copy()
             template_dict.update(dict(zip(cell_keys, combination)))
 
             # Load template
             template = env.get_template(template_file)
 
+            # Fill out template with given values
             templating_result = template.render(template_dict)
 
+            # Determine name of file to store templating results into
             if not vars(args)["multi_file"]:
                 # append the results to one big library file
                 file_name = "{}.v".format(library_spec["lib"])
@@ -197,9 +192,10 @@ Can be either a file path or YAML-formatted text directly from standard input
             if not os.path.exists(lib_dir):
                 try:
                     os.mkdir(lib_dir)
-                except EnvironmentError as e:
+                except EnvironmentError:
                     sys.stderr.write("error: failed to open directory for output library\n")
                     sys.exit(1)
+
             # Either write or append depending on multi-file setting
             file_path = os.path.join(lib_dir, file_name)
             if not vars(args)["multi_file"]:
