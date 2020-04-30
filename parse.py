@@ -1,4 +1,7 @@
+#!/usr/bin/python3
+
 import re
+
 
 count=0
 # with open ('scl40_htc50.mv', 'rt') as myfile:  # Open lorem.txt for reading text
@@ -37,16 +40,30 @@ with open('scl40_htc50.mv', 'rt') as infile:
 modelInformation = []   #Create a dictionary to store the model information
 
 for module in moduleList:
+    # Extract the module name and then its components
+    # NOTE: consider combining following operations into single regex evaluation
+    moduleName = re.match(r'module\s+([A-Za-z_][A-Za-z0-9_\$]*)\s+\(.*\)', module).group(1)
+    #print(moduleName)
+    moduleRegex = r'(?P<lib>[A-Za-z0-9]+)_(?P<func>[A-Za-z0-9]+)_(?P<ext>[A-Za-z0-9]+(?=_[0-9]+))_(?P<drive>[0-9]+(?:P[0-9]+)?)'
+    moduleNameComponents = re.match(moduleRegex, moduleName)
+
+    # Extract the inputs
     inputLoc= re.search('input.+;', module)
     inputs= inputLoc.group()[6:len(inputLoc.group())-1].split(',')  #Want to eliminate the "input", and ";" part of the string, then split outputs into a list
-
+    
+    # Extract the outputs
     outputLoc= re.search('output.+;', module)
     outputs= outputLoc.group()[7:len(outputLoc.group())-1].split(',') #Want to eliminate the "output", and ";" part of the string, then split outputs into a list
     
-
-
     print(module)
     
-    modelInformation.append({'model': 'hello', 'input': inputs, 'output': outputs})  #store the module name, inputs, and outputs all in the same index
-    
-        
+    # Store the module name, inputs, and outputs all in the same index
+    modelInformation.append({\
+            'lib': moduleNameComponents.group('lib'),\
+            'model': moduleNameComponents.group('func'),\
+            'ext': moduleNameComponents.group('ext'),\
+            'drive': moduleNameComponents.group('drive'),\
+            'input': inputs,\
+            'output': outputs})
+
+
