@@ -104,7 +104,7 @@ Can be either a file path or YAML-formatted text directly from standard input
         templates_dir = "./templates"
 
     if vars(args)["library_directory"] is not None:
-        lib_dir = os.path.join(vars(args)["library_directory"][0] + os.sep, "{}/".format(library_spec["lib"]))
+        lib_dir = os.path.join(vars(args)["library_directory"][0] + os.sep, "{0}/".format(library_spec["lib"]))
         lib_dir = os.path.normpath(lib_dir)
     else:
         try:
