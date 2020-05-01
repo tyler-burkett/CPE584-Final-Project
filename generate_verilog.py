@@ -182,7 +182,7 @@ Can be either a file path or YAML-formatted text directly from standard input
             # Blank out header for future templates if not in multi-file mode;
             # make the single-file only have the header once
             if not vars(args)["multi_file"]:
-                template_dict["header"] = ""
+                global_dict["header"] = ""
 
             # Load template
             template = env.get_template(template_file)
