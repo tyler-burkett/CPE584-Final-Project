@@ -58,6 +58,14 @@ Can be either a file path or YAML-formatted text directly from standard input
 
     args = input_parser.parse_args()
 
+    # Python 2; convert basestrings to str type in args
+    try:
+        for var in vars(args):
+            if isinstance(args.__dict__[var], basestring):
+                args.__dict__[var] = str(args.__dict__[var])
+    except NameError:
+        pass
+
     # Take the YAML file (either from stdin or file) and try to load it
     try:
         # Input is valid file path; try to load it and read in a YAML object
@@ -106,7 +114,7 @@ Can be either a file path or YAML-formatted text directly from standard input
             sys.exit(1)
 
     # Copy global parameters from the library specification YAML
-    single_elements = {"lib", "header"}
+    single_elements = ["lib", "header"]
     global_dict = dict()
     for key, value in library_spec.items():
         if key != "cells" and key not in single_elements:
@@ -123,7 +131,7 @@ Can be either a file path or YAML-formatted text directly from standard input
         # (they are supposed to be a list; we do not want to
         # iterate over the items in them).
         # Put any other single elements into a list to iterate over
-        list_cell_names = {"in", "out"}
+        list_cell_names = ["in", "out"]
         for key in cell.keys():
             if key in list_cell_names or not isinstance(cell[key], list):
                 cell[key] = [cell[key]]
