@@ -179,11 +179,17 @@ Can be either a file path or YAML-formatted text directly from standard input
             template_dict = global_dict.copy()
             template_dict.update(dict(zip(cell_keys, combination)))
 
+            # Blank out header for future templates if not in multi-file mode;
+            # make the single-file only have the header once
+            if not vars(args)["multi_file"]:
+                template_dict["header"] = ""
+
             # Load template
             template = env.get_template(template_file)
 
             # Fill out template with given values
             templating_result = template.render(template_dict)
+            templating_result += "\n"
 
             # Determine name of file to store templating results into
             if not vars(args)["multi_file"]:
