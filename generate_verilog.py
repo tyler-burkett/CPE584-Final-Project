@@ -108,7 +108,7 @@ Can be either a file path or YAML-formatted text directly from standard input
         lib_dir = os.path.normpath(lib_dir)
     else:
         try:
-            lib_dir = "./{}/".format(library_spec["lib"])
+            lib_dir = "./{0}/".format(library_spec["lib"])
         except KeyError:
             sys.stderr.write("error: library not specified in provided library specification\n")
             sys.exit(1)
@@ -147,14 +147,14 @@ Can be either a file path or YAML-formatted text directly from standard input
             variables = get_variables(env, template_file)
         except jinja2.exceptions.TemplatesNotFound:
             # Unknown function given in cell; print error and skip to next cell
-            sys.stderr.write("warning: unknown function {} found in cell# {}; skipping\n".format(str(cell["function"]), str(num)))
+            sys.stderr.write("warning: unknown function {0} found in cell# {1}; skipping\n".format(str(cell["function"]), str(num)))
             continue
 
         complete_vars = all(var in precheck_set for var in variables)
         if not complete_vars:
             # If variables are missing, skip the cell and move on
             missing_vars = set(var for var in variables if var not in precheck_set)
-            sys.stderr.write("warning: missing the following variables {} for cell# {}; skipping\n".format(str(missing_vars), str(num)))
+            sys.stderr.write("warning: missing the following variables {0} for cell# {1}; skipping\n".format(str(missing_vars), str(num)))
             continue
 
         # Calculate the cross product of the parameters in the cell
@@ -188,7 +188,7 @@ Can be either a file path or YAML-formatted text directly from standard input
             # Determine name of file to store templating results into
             if not vars(args)["multi_file"]:
                 # append the results to one big library file
-                file_name = "{}.v".format(library_spec["lib"])
+                file_name = "{0}.v".format(library_spec["lib"])
             else:
                 # create a seperate .v file for the new cell
                 search_result = re.search(r"module ([\d\w]*)", templating_result)
