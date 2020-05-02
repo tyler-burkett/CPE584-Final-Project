@@ -363,7 +363,7 @@ cells:
 -
   function: dlrtp
   name: dlrtp
-  drive: [1, 2]
+  drive: [1, 2, 4]
   out: [Q] # maps to out0, out1, etc.
   in: [RESETB, D, GATE] # maps to in0, in1, etc.
 -
