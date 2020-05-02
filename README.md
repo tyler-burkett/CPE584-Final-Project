@@ -6,7 +6,8 @@ Parsing script for creating
 
 ### generate_verilog.py Help
 ### Installation
-Install python v2.6+
+Install python v2.6+    
+While in the directory that contains the generate_verilog.py type: $ chmod +x generate_verilog.py
 ##### Required Python Libraries
 - argparse   
 - pyyaml  
@@ -15,36 +16,31 @@ Install python v2.6+
 
 #### How to call the script
 $ python generate_verilog.py [location of the .yml file]  
-**example call:** $ python generate_verilog.py ./tests/data/scs8hd.yml
+**example call:** $ generate_verilog.py ./tests/data/scs8hd.yml
 #### Optional Arguments   
 
 -h   
 This displays a help menu.    
-**example call:** $ python generate_verilog.py -h
+**example call:** $ generate_verilog.py -h
 &nbsp;  
 &nbsp;
-
 
 -t TEMPLATE_DIR   
 This command allows you to select the location of the template directory. The default location for the template directory is: ./templates   
-**example call:** $ python generate_verilog.py -t ./secondary_templates ./tests/data/scs8hd.yml
+**example call:** $ generate_verilog.py -t ./secondary_templates ./tests/data/scs8hd.yml
 &nbsp;  
 &nbsp;
-
-
 
 -d OUTPUT_DIR   
 This command allows you to select the location of the output directory. The default location is ./[library_name]    
 Your input will change the location of the created [library_name] directory.  
-**example call:** $ python generate_verilog.py -d ./secondary_output ./tests/data/scs8hd.yml
+**example call:** $ generate_verilog.py -d ./secondary_output ./tests/data/scs8hd.yml
 &nbsp;  
 &nbsp;
 
-
-
 -m   
 This command allows you to turn on multi_file and output each generated Verilog template in its own file. The default output is in one file back to back with three blank line separating them.  
-**example call:** $ python generate_verilog.py -m ./tests/data/scs8hd.yml
+**example call:** $ generate_verilog.py -m ./tests/data/scs8hd.yml
 &nbsp;  
 &nbsp;
 
