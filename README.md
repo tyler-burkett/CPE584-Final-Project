@@ -7,7 +7,6 @@ Parsing script for creating
 ### generate_verilog.py Help
 ### Installation
 Install python v2.6+    
-While in the directory that contains the generate_verilog.py type: $ chmod +x generate_verilog.py
 ##### Required Python Libraries
 - argparse   
 - pyyaml  
