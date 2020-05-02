@@ -11,6 +11,9 @@ Generic template script for creating Verilog modules from different vendor libra
 ### generate_verilog.py Help
 Works for python v2.6 and newer.
 
+#### Installation
+
+
 #### How to call the script
 $ python generate_verilog.py [location of the .yml file]  
 **example call:** $ python generate_verilog.py ./tests/data/scs8hd.yml
@@ -50,8 +53,10 @@ cells:
 ...
 
 ### parse.py help
+works for python v3 and newer.   
+.vm .mv ecxel as inputs
 
 #### How to call the script
 $ python parse.py [-------------------]
 
-#### Optional Arguments 
+#### Optional Arguments
