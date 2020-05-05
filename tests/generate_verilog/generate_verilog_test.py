@@ -54,7 +54,7 @@ class GenerateVerilogTest(unittest.TestCase):
                 gen_model_text = re.sub(spaces_and_comments, "", gen_file.read())
             diffchecker = difflib.SequenceMatcher(None, test_model_text, gen_model_text)
             if diffchecker.ratio() < 0.98:
-                self.fail("Error in generated model {}".format(gen_model))
+                self.fail("Error in generated model {0}".format(gen_model))
             if diffchecker.ratio() != 1:
                 print("Differences found between {0} and {1}".format(test_model, gen_model))
                 for tag, i1, i2, j1, j2 in diffchecker.get_opcodes():
