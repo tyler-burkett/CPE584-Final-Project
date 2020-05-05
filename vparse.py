@@ -2,6 +2,11 @@
 
 import abc
 import re
+import csv
+import sys
+import argparse
+import inspect
+import yaml
 
 
 
@@ -178,21 +183,21 @@ class TokenStream:
         self._i = i
 
     def getNext(self):
-        if self._i < len(tokens):
+        if self._i < len(self._tokens):
             self._i += 1
-            return tokens[self._i - 1]
+            return self._tokens[self._i - 1]
         else:
             return None
 
     def peek(self):
-        if self._i < len(tokens):
-            return tokens[self._i]
+        if self._i < len(self._tokens):
+            return self._tokens[self._i]
         else:
             return None
 
     def remember(self):
         if self._i > 0:
-            return tokens[self._i - 1]
+            return self._tokens[self._i - 1]
         else:
             return None
 
@@ -233,7 +238,7 @@ def tokenizeByDirective(code = ""):
             #print("<appended code> in [%d, %d)" % (i, directiveNameStart))
             i = directiveNameStart
 
-        print("%s at [%d, %d)" % (directiveNameMatch.group("directiveName"), directiveNameStart, directiveNameEnd))
+        #print("%s at [%d, %d)" % (directiveNameMatch.group("directiveName"), directiveNameStart, directiveNameEnd))
 
         # Tokenize appropriate directive based on directive name
         directiveName = directiveNameMatch.group("directiveName")
@@ -308,7 +313,7 @@ def parse(tokenStream):
         # The next token must (should) be an endif directive, so just consume
         # it. 
         # (TODO: At this point, ensure that the next token is as expected)
-        print("Final token in branch is: %s" % tokenStream.peek())
+        #print("Final token in branch is: %s" % tokenStream.peek())
         tokenStream.getNext()
 
         if conditionToken["directive"] == IFDEF_DIRECTIVE_KEYWORD:
@@ -325,6 +330,7 @@ def parse(tokenStream):
 
 
     # ----- Begin `parse()` Operation -----
+
     peek = tokenStream.peek()
 
     if peek is None:
@@ -366,7 +372,7 @@ def parse(tokenStream):
 
 
 
-def parseAll(tokens = []):
+def parseTokens(tokens = []):
     tokenStream = TokenStream(tokens)
     astNodes = []
 
@@ -375,7 +381,7 @@ def parseAll(tokens = []):
         astNodes.append(node)
         node = parse(tokenStream)
 
-    return astNodes
+    return DASTBlock(astNodes)
 
 
 
@@ -387,24 +393,288 @@ def stripComments(code = ""):
 
 
 
-# ---------- Testing ----------
+def compileVerilogWithMacros(code = "", macroContext = {}):
+    strippedCode = stripComments(code)
+    tokens = tokenizeByDirective(strippedCode)
+    ast = parseTokens(tokens)
+    return ast.evaluate(macroContext)
 
-#text = stripComments(open('test_scl40_htc50.mv').read())
-text = stripComments(open('scs8hd/scs8hd_dfbbn_1.v').read())
+
+
+def loadModelFuncMap(filePath):
+    modelFuncMap = {}
+    try:
+        with open(filePath, 'r') as csvFile:
+            csvReader = csv.reader(csvFile, delimiter=',')
+            for rowNum, row in enumerate(csvReader):
+                if len(row) != 2:
+                    sys.stderr.write("Error: invalid row %d in csv model-func mapping file.\n" % rowNum)
+                    sys.exit(1)
+                modelFuncMap[row[1].strip()] = row[0].strip()
+            return modelFuncMap
+
+    except IOError:
+        sys.stderr.write("Error: failed to open \'%s\' for reading\n" % filePath)
+
+
+
+def extractInputPins(moduleCode):
+    # Extract all input definitions
+    # (i.e. a list of strings, where each string is a given `input` statement's
+    # list of pin names)
+    inputDefs = re.findall(r'(?<=input)(?:(?!input|output|;|\n|\)).)*', moduleCode)
+
+    # Iterate through the input definitions, extract the individual pin names
+    # from the string, as an array, and then append those pin names to a
+    # list of all input pins in the module
+    pins = []
+    for inputDef in inputDefs:
+        pins.extend(re.findall(r'[A-Za-z_][A-Za-z0-9_\$]*', inputDef))
+
+    return pins
+
+
+
+def extractOutputPins(moduleCode):
+    # Extract all output definitions
+    # (i.e. a list of strings, where each string is a given `output` 
+    # statement's list of pin names)
+    outputDefs = re.findall(r'(?<=output)(?:(?!input|output|;|\n|\)).)*', moduleCode)
+
+    # Iterate through the output definitions, extract the individual pin names
+    # from the string, as an array, and then append those pin names to a
+    # list of all output pins in the module
+    pins = []
+    for outputDef in outputDefs:
+        pins.extend(re.findall(r'[A-Za-z_][A-Za-z0-9_\$]*', outputDef))
+
+    return pins
+
+
+
+def findUsedMacros(code):
+    return set(re.findall(r'`(?:ifdef|ifndef|elsif)\s+([A-Za-z_][A-Za-z0-9_\$]+)', code))
+
+
+
+def splitModules(code):
+    # TODO
+    pass
+
+
+
+def readFileToString(filePath):
+    try:
+        with open(filePath, 'r') as file:
+            return file.read()
+    except IOError:
+        sys.stderr.write("Error: failed to open \'%s\' for reading.\n" % filePath)
+
+
+
+def compileNamingConvention(regexStr):
+    try:
+        namingConvention = re.compile(regexStr)
+        # Ensure that 'lib', 'func', and 'drive' groups were defined
+        groups = namingConvention.groupindex
+        if 'lib' not in groups:
+            sys.stderr.write("Error: A \'lib\' capturing group must be defined in the naming convention regular expression.\n")
+            exit(1)
+        elif 'base' not in groups:
+            sys.stderr.write("Error: A \'base\' capturing group must be defined in the naming convention regular expression.\n")
+            exit(1)
+        elif 'drive' not in groups:
+            sys.stderr.write("Error: A \'drive\' capturing group must be defined in the naming convention regular expression.\n")
+            exit(1)
+
+        return namingConvention
+
+    except re.error:
+        sys.stderr.write("Error: %s is not a valid regular expression.\n" % regexStr)
+        exit(1)
+
+
+
+
+def getArgs():
+    description = ''
+    epilog = ''
+    argParser = argparse.ArgumentParser(description=description, epilog=epilog, formatter_class=argparse.RawTextHelpFormatter)
+
+    runDirHelp = 'Specify the run directory. Defaults to the current directory.'
+    argParser.add_argument('-d', metavar='RUN_DIR', nargs=1, default='.', help=runDirHelp)
+
+    macrosHelp = inspect.cleandoc('''
+    Specify the list of defined macros to use when parsing the Verilog modules.
+    If this flag is not present, or if present without any macros listed, then 
+    the verilog code is parsed with no macros initially set. Any `define 
+    directives encountered will cause the script to continue on with the 
+    specified macro as now being defined, and any `undef directives will cause
+    the script to continue on with the given macro as no longer being defined, 
+    regardless of the macros specified by this option. Thus, the "definition"
+    of a macro changes accordingly as the Verilog code is parsed. 
+    ''')
+    argParser.add_argument('-m', metavar='MACRO', nargs='*', dest='macros', default=[], help=macrosHelp)
+
+    vModsHelp = 'The Verilog file containing the module definitions to parse.'
+    argParser.add_argument('modules_file', help=vModsHelp)
+
+    modFuncMapHelp = 'The CSV model-func mapping file.'
+    argParser.add_argument('model_func_map', help=modFuncMapHelp)
+
+    modRegexHelp = inspect.cleandoc('''
+    The regular expression defining the naming convention used by the modules
+    defined in the 'modules_file' Verilog file. 
+    ''')
+    argParser.add_argument('module_regex', help=modRegexHelp)
+
+    return vars(argParser.parse_args())
+
+
+
+# ---------- Begin Main Script Operation ----------
+
+if __name__ == "__main__":
+    # Parse the command-line arguments.
+    args = getArgs()
+
+    # Read in the model-func mapping file
+    modelFuncMap = loadModelFuncMap(args['model_func_map'])
+
+    # Read in the Verilog code as is.
+    fileStr = readFileToString(args['modules_file'])
+
+    # Report which macros are available vs. which macros will be used.
+    allMacros = findUsedMacros(fileStr)
+    specifiedMacros = set(args['macros'])
+    print("Macros found in code:\t%s\nUsing specified macros:\t%s" % (', '.join(allMacros), ', '.join(specifiedMacros)))
+
+    # Generate the resulting Verilog code given the specified macros.
+    # The macros are expected to be in the form of a dictionary.
+    macroContext = dict.fromkeys(specifiedMacros, True)
+    compiledCode = compileVerilogWithMacros(fileStr, macroContext)
+
+    # Compile and check the specifiec module naming convention regex
+    namingConventionRegex = compileNamingConvention(args['module_regex'])
+
+    # Iterate through every module definition, extract the components of
+    # interest (i.e. lib name, model name, drive strength, and input & output
+    # pin names), and then update the cell dictionary with this info. 
+    # Use regex to get everything between each `module` to `endmodule` pair.
+    unknownNamings = set()
+    unrecognizedBases = set()
+    duplicateDrives = set()
+    pinCountClashes = set()
+    duplicateDefinitions = set()
+    libraries = {}
+    for moduleCode in re.finditer(r'module(?:(?!endmodule).)*endmodule', compiledCode, flags=re.DOTALL):
+        # Extract the module name and then its components as defined by the 
+        # naming convention
+        moduleName = re.search(r'module\s+([A-Za-z_][A-Za-z0-9_\$]*)', moduleCode[0])[1]
+        moduleComponentsMatch = namingConventionRegex.fullmatch(moduleName)
+
+        # Perform some checking on the name of the module
+        if moduleComponentsMatch is None:
+            print('Warning: Skipping module \'%s\', which does not comply to the naming convention.', moduleName)
+            unknownNamings.add(moduleName)
+            continue
+
+        lib = moduleComponentsMatch['lib']
+        base = moduleComponentsMatch['base']
+        drive = moduleComponentsMatch['drive']
+        if lib is None:
+            print('Warning: Skipping module \'%s\', which has no \'lib\' component in the name.', moduleName)
+            unknownNamings.add(moduleName)
+            continue
+        if base is None:
+            print('Warning: Skipping module \'%s\', which has no \'base\' component in the name.', moduleName)
+            unknownNamings.add(moduleName)
+            continue
+        if drive is None:
+            print('Warning: Skipping module \'%s\', which has no \'drive\' component in the name.', moduleName)
+            unknownNamings.add(moduleName)
+            continue
+
+        # Lookup this module's func from the model-func map
+        if base not in modelFuncMap:
+            print("Warning: Skipping module \'%s\' with unrecognized base \'%s\'." % (moduleName, base))
+            unrecognizedBases.add(base)
+            continue
+        func = modelFuncMap[base]
+
+        # Extract pins
+        inputPins = extractInputPins(moduleCode)
+        outputPins = extractOutputPins(moduleCode)
+
+        # Update the entry for this module's cell
+        if lib not in libraries:
+            # This library has not been encountered yet, so make a new entry
+            cell = {'function': func, 'name': base, 'drive': set(drive), 'out': outputPins, 'in': inputPins}
+            cells = {base: cell}
+            libraries[lib] = {'lib': lib, 'cells': cells}
+
+        else:
+            cells = libraries[lib][cells][base]
+            if base not in cells:
+                # This library does not have an entry for this module's base,
+                # so make a new entry
+                cell = {'function': func, 'name': base, 'drive': set(drive), 'out': outputPins, 'in': inputPins}
+                cells[base] = cell
+
+            else: 
+                # This base already has an entry, so update it.
+                cell = cells[base]
+
+                if drive in cell['drive']:
+                    # Uh, oh, this drive strength has already been defined for
+                    # this cell
+                    print("Warning: Skipping duplicate definition for module \'%s\'." % moduleName)
+                    duplicateDrives.add(moduleName)
+                    continue
+
+                if inputPins != cell['in'] or outputPins != cell['out']:
+                    # Uh, oh, this drive has conflicting pin definitions with
+                    # previously defined drives for this base/cell
+                    print("Warning: Skipping module \'%s\', which defines pins that conflict with the pins defined by other drives for this same base." % moduleName)
+                    pinCountClashes.add(base)
+                    continue
+
+                # All tests passed, so add the new drive strength to the entry
+                # for this base/cell
+                cell['drive'].add(drive)
+
+    # For each library, dump the results into a yaml file
+    
+
+    exit(0)
+
+
+
+
+
+
+
+# ---------- Testing ----------
+args = getArgs()
+
+text = stripComments(open('test_scl40_htc50.mv').read())
+#text = stripComments(open('scs8hd/scs8hd_dfbbn_1.v').read())
+#text = stripComments(open('rand_test.v').read())
 tokens = tokenizeByDirective(text)
 nodes = parseAll(tokens)
 ast = DASTBlock(nodes)
 print(ast)
 
 # Find all macros used in conditional directives
-ifdefvars = set(re.findall(r'`(?:ifdef|ifndef|elsif)\s+([A-Za-z_][A-Za-z0-9_\$]+)', text))
 print(ifdefvars)
 
 
 #print(ast.evaluate({"BIAS_PINS": True}))
 
 def test(ast, macroContext):
-    with open("testOutput.v", "w") as outputFile:
-        outputFile.write(ast.evaluate(macroContext))
-
+    #with open("testOutput.v", "w") as outputFile:
+    #    outputFile.write(ast.evaluate(macroContext))
+    code = ast.evaluate(macroContext)
+    print(extractInputPins(code))
+    print(extractOutputPins(code))
 
