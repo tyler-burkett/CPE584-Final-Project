@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import re
-
+import yaml
 
 count=0
 # with open ('scl40_htc50.mv', 'rt') as myfile:  # Open lorem.txt for reading text
@@ -74,3 +74,7 @@ for module in moduleList:
             'input': inputs,\
             'output': outputs})
         driveList=[]
+
+with open('testYaml.yaml', 'w') as filen:
+    documents= yaml.dump(modelInformation,filen)
+
