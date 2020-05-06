@@ -21,6 +21,7 @@ class GenerateVerilogTest(unittest.TestCase):
         cls.test_models_path = "tests/data/scs8hd"
         cls.gen_models_path = os.path.normpath(os.path.join(dir_path + os.sep, os.path.basename(cls.test_models_path)))
 
+    @unittest.skip("Not completely automated")
     def test_script_outputs(self):
         # Make test do nothing until we can test on proper verilog sim setup
         return
@@ -47,7 +48,7 @@ class GenerateVerilogTest(unittest.TestCase):
         for model in files_to_check:
             test_model = os.path.abspath(os.path.join(self.test_models_path + os.sep, model))
             gen_model = os.path.abspath(os.path.join(self.gen_models_path + os.sep, model))
-            spaces_and_comments = r"\s+|(?m)^ *//.*\n?"
+            spaces_and_comments = r"(?m)\s+|^ *//.*\n?"
             with open(test_model, "r") as test_file:
                 test_model_text = re.sub(spaces_and_comments, "", test_file.read())
             with open(gen_model, "r") as gen_file:

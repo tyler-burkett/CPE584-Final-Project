@@ -47,7 +47,7 @@ if __name__ == "__main__":
     nargs=1, help="specify directory to create vendor-specific library in (default: ./)")
 
     input_parser.add_argument("-m", "--multi_file", action="store_true",
-    help="store each output Verilog module in it's own file, rather than palcing all of them into one")
+    help="store each output Verilog module in its own file, rather than placing all of them into one")
 
     yaml_help = \
 """the YAML containing specifications for the vendor-specfic Verilog library you want to generate
@@ -117,9 +117,11 @@ Can be either a file path or YAML-formatted text directly from standard input
     single_elements = ["lib", "header"]
     global_dict = dict()
     for key, value in library_spec.items():
-        if key != "cells" and key not in single_elements:
+        if key in single_elements:
+            global_dict[key] = value
+        elif key != "cells" and not isinstance(value, list):
             global_dict[key] = [value]
-        elif key in single_elements:
+        elif key != "cells" and isinstance(value, list):
             global_dict[key] = value
 
     # Startup jinja2 templating environment
