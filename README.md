@@ -62,9 +62,48 @@ cells:
 
 ### parse.py help
 works for python v3+   
-.vm .mv ecxel as inputs
+
 
 #### How to call the script
-$ python parse.py [-------------------]
+$ vparse.py   
+This will show a usage screen
+&nbsp;  
 
+$ vparse.py modules_file model_func_map module_regex  
+This will call the function without optional arguments. These file are assumed to be in the same directory if no path is given.
+
+#### Positional Arguments
+modules_file  
+The Verilog file containing the module definitions to parse.
+&nbsp;  
+
+model_func_map  
+The CSV model-func mapping file.
+&nbsp;  
+
+module_regex  
+The regular expression defining the naming convention used by the modules defined in the 'modules_file' Verilog file.
+&nbsp;  
 #### Optional Arguments
+
+-h   
+This displays a help menu.    
+**example call:** $ vparse.py -h modules_file model_func_map module_regex
+&nbsp;  
+&nbsp;
+
+-d RUN_DIR   
+This command allows you to select the location of the run directory. The default location is the current directory.    
+**example call:** $ vparse.py -d ./secondary_run modules_file model_func_map module_regex
+&nbsp;  
+&nbsp;
+
+-m [MACRO [MACRO...]]   
+This command allows you to specify a list of defined macros to use when parsing the Verilog modules.   
+If the flag is not presnt, or no macros are given, then the code is parsed with no macros initially set.  
+Any **\`define** directives encountered will cause the script to continue on with the specified macro as now being defined.   
+Any **\`undef** directives will cause the script to continue on with the given macro as no longer being defined, regardless of the macros specified by this option.   
+Thus, the "definition" of a macro changes accordingly as the Verilog code is parsed.   
+**example call:** $ vparse.py -m [BIAS PINS [SC_USE)PG_PIN]] modules_file model_func_map module_regex
+&nbsp;  
+&nbsp;
