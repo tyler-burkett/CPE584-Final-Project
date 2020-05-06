@@ -7,6 +7,7 @@ import sys
 import argparse
 import inspect
 import yaml
+import os
 
 
 
@@ -415,6 +416,7 @@ def loadModelFuncMap(filePath):
 
     except IOError:
         sys.stderr.write("Error: failed to open \'%s\' for reading\n" % filePath)
+        exit(1)
 
 
 
@@ -502,7 +504,7 @@ def getArgs():
     argParser = argparse.ArgumentParser(description=description, epilog=epilog, formatter_class=argparse.RawTextHelpFormatter)
 
     runDirHelp = 'Specify the run directory. Defaults to the current directory.'
-    argParser.add_argument('-d', metavar='RUN_DIR', nargs=1, default='.', help=runDirHelp)
+    argParser.add_argument('-d', metavar='RUN_DIR', dest='runDir', nargs=1, default='.', help=runDirHelp)
 
     macrosHelp = inspect.cleandoc('''
     Specify the list of defined macros to use when parsing the Verilog modules.
@@ -567,10 +569,10 @@ if __name__ == "__main__":
     pinCountClashes = set()
     duplicateDefinitions = set()
     libraries = {}
-    for moduleCode in re.finditer(r'module(?:(?!endmodule).)*endmodule', compiledCode, flags=re.DOTALL):
+    for moduleCodeMatch in re.finditer(r'module(?:(?!endmodule).)*endmodule', compiledCode, flags=re.DOTALL):
         # Extract the module name and then its components as defined by the 
         # naming convention
-        moduleName = re.search(r'module\s+([A-Za-z_][A-Za-z0-9_\$]*)', moduleCode[0])[1]
+        moduleName = re.search(r'module\s+([A-Za-z_][A-Za-z0-9_\$]*)', moduleCodeMatch[0])[1]
         moduleComponentsMatch = namingConventionRegex.fullmatch(moduleName)
 
         # Perform some checking on the name of the module
@@ -603,22 +605,22 @@ if __name__ == "__main__":
         func = modelFuncMap[base]
 
         # Extract pins
-        inputPins = extractInputPins(moduleCode)
-        outputPins = extractOutputPins(moduleCode)
+        inputPins = extractInputPins(moduleCodeMatch[0])
+        outputPins = extractOutputPins(moduleCodeMatch[0])
 
         # Update the entry for this module's cell
         if lib not in libraries:
             # This library has not been encountered yet, so make a new entry
-            cell = {'function': func, 'name': base, 'drive': set(drive), 'out': outputPins, 'in': inputPins}
+            cell = {'function': func, 'name': base, 'drive': [drive], 'out': outputPins, 'in': inputPins}
             cells = {base: cell}
             libraries[lib] = {'lib': lib, 'cells': cells}
 
         else:
-            cells = libraries[lib][cells][base]
+            cells = libraries[lib]['cells']
             if base not in cells:
                 # This library does not have an entry for this module's base,
                 # so make a new entry
-                cell = {'function': func, 'name': base, 'drive': set(drive), 'out': outputPins, 'in': inputPins}
+                cell = {'function': func, 'name': base, 'drive': [drive], 'out': outputPins, 'in': inputPins}
                 cells[base] = cell
 
             else: 
@@ -641,40 +643,34 @@ if __name__ == "__main__":
 
                 # All tests passed, so add the new drive strength to the entry
                 # for this base/cell
-                cell['drive'].add(drive)
+                cell['drive'].append(drive)
+
+    # Ensure that the run directory either exists and is accesible or attempt
+    # to create it
+    runDir = args['runDir']
+    if not os.path.exists(runDir):
+        try:
+            os.mkdir(runDir)
+        except OSError:
+            sys.stderr.write("Error: Failed to open run directory for output.\n")
+            sys.exit(1)
 
     # For each library, dump the results into a yaml file
-    
+    for libName, libDict in libraries.items():
+        # Re-represent the library dict as expected 
+        ymlLibDict = {'lib': libName, 'cells': list(libDict['cells'].values())}
+
+        # Attempt to write the output yaml file
+        try:
+            libYamlFilePath = os.path.join(runDir, libName + '.yml')
+            with open(libYamlFilePath, 'w') as ymlFile:
+                yaml.safe_dump(ymlLibDict, ymlFile)
+                print('Wrote to: %s' % libYamlFilePath)
+        except IOError:
+            sys.stderr.write("Error: failed to open \'%s\' for writing\n" % libYamlFilePath)
+
+    print('Complete.')
 
     exit(0)
 
-
-
-
-
-
-
-# ---------- Testing ----------
-args = getArgs()
-
-text = stripComments(open('test_scl40_htc50.mv').read())
-#text = stripComments(open('scs8hd/scs8hd_dfbbn_1.v').read())
-#text = stripComments(open('rand_test.v').read())
-tokens = tokenizeByDirective(text)
-nodes = parseAll(tokens)
-ast = DASTBlock(nodes)
-print(ast)
-
-# Find all macros used in conditional directives
-print(ifdefvars)
-
-
-#print(ast.evaluate({"BIAS_PINS": True}))
-
-def test(ast, macroContext):
-    #with open("testOutput.v", "w") as outputFile:
-    #    outputFile.write(ast.evaluate(macroContext))
-    code = ast.evaluate(macroContext)
-    print(extractInputPins(code))
-    print(extractOutputPins(code))
 
