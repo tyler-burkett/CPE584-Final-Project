@@ -35,9 +35,9 @@ class GenerateVerilogTest(unittest.TestCase):
         for model in files_to_check:
             test_model = os.path.abspath(os.path.join(test_models_path + os.sep, model))
             gen_model = os.path.abspath(os.path.join(self.gen_models_path + os.sep, model))
-            if subprocess.call(["iverilog", test_model], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
+            if subprocess.call(["ncsim", test_model], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
                 continue
-            if subprocess.call(["iverilog", gen_model], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
+            if subprocess.call(["ncsim", gen_model], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
                 print("Error in generated model {}".format(gen_model))
                 self.fail()
 
