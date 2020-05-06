@@ -60,16 +60,16 @@ cells:
 &nbsp;&nbsp;  in: [\<input_pin_name>, ...]  
 ...
 
-### parse.py help
+### module_parser.py help
 works for python v3+   
 
 
 #### How to call the script
-$ vparse.py   
+$ module_parser.py   
 This will show a usage screen
 &nbsp;  
 
-$ vparse.py modules_file model_func_map module_regex  
+$ module_parser.py modules_file model_func_map module_regex  
 This will call the function without optional arguments. These file are assumed to be in the same directory if no path is given.
 
 #### Positional Arguments
@@ -88,13 +88,13 @@ The regular expression defining the naming convention used by the modules define
 
 -h   
 This displays a help menu.    
-**example call:** $ vparse.py -h modules_file model_func_map module_regex
+**example call:** $ module_parser.py -h modules_file model_func_map module_regex
 &nbsp;  
 &nbsp;
 
 -d RUN_DIR   
 This command allows you to select the location of the run directory. The default location is the current directory.    
-**example call:** $ vparse.py -d ./secondary_run modules_file model_func_map module_regex
+**example call:** $ module_parser.py -d ./secondary_run modules_file model_func_map module_regex
 &nbsp;  
 &nbsp;
 
@@ -104,6 +104,6 @@ If the flag is not presnt, or no macros are given, then the code is parsed with 
 Any **\`define** directives encountered will cause the script to continue on with the specified macro as now being defined.   
 Any **\`undef** directives will cause the script to continue on with the given macro as no longer being defined, regardless of the macros specified by this option.   
 Thus, the "definition" of a macro changes accordingly as the Verilog code is parsed.   
-**example call:** $ vparse.py -m [BIAS PINS [SC_USE)PG_PIN]] modules_file model_func_map module_regex
+**example call:** $ module_parser.py -m [BIAS PINS [SC_USE)PG_PIN]] modules_file model_func_map module_regex
 &nbsp;  
 &nbsp;
