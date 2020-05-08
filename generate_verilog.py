@@ -146,10 +146,10 @@ Can be either a file path or YAML-formatted text directly from standard input
         # and checking all the keys in the final template dict match variables in the
         # template
         precheck_set = set(global_dict.keys()) | set(cell_keys)
-        template_file = cell["function"][0] + ".v"
         try:
+            template_file = cell["function"][0] + ".v"
             variables = get_variables(env, template_file)
-        except jinja2.exceptions.TemplatesNotFound:
+        except (jinja2.exceptions.TemplatesNotFound, TypeError):
             # Unknown function given in cell; print error and skip to next cell
             sys.stderr.write("warning: unknown function {0} found in cell# {1}; skipping\n".format(str(cell["function"]), str(num)))
             continue
