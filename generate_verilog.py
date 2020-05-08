@@ -38,7 +38,8 @@ if __name__ == "__main__":
     ...
 
     """
-    input_parser = argparse.ArgumentParser(description=description, epilog=epilog, formatter_class=argparse.RawTextHelpFormatter)
+    input_parser = argparse.ArgumentParser(description=description, epilog=epilog,
+                                    formatter_class=argparse.RawTextHelpFormatter)
 
     input_parser.add_argument("-t", "--templates_directory", metavar="TEMPLATE_DIR",
     nargs=1, help="specify location of Verilog templates (default: ./templates)")
@@ -128,6 +129,7 @@ Can be either a file path or YAML-formatted text directly from standard input
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_dir),
         variable_start_string="{?", variable_end_string="?}")
 
+    print("generating modules...")
     for num, cell in enumerate(library_spec["cells"]):
         # Make in, out lists an element in its own list
         # (they are supposed to be a list; we do not want to
@@ -220,3 +222,5 @@ Can be either a file path or YAML-formatted text directly from standard input
             else:
                 with open(file_path, "w") as file:
                     file.write(templating_result)
+
+    print("Finished generating modules.")
