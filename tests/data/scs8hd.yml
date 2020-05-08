@@ -392,13 +392,13 @@ cells:
   in: [A] # maps to in0, in1, etc.
 -
   function: dlygate4sd2
-  name: dlygate4sd1
+  name: dlygate4sd2
   drive: [1]
   out: [X] # maps to out0, out1, etc.
   in: [A] # maps to in0, in1, etc.
 -
   function: dlygate4sd3
-  name: dlygate4sd1
+  name: dlygate4sd3
   drive: [1]
   out: [X] # maps to out0, out1, etc.
   in: [A] # maps to in0, in1, etc.

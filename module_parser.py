@@ -591,7 +591,8 @@ if __name__ == "__main__":
     # at the command-line. 
     if args['outputCompiledFlag']:
         try:
-            compiledCodePath = os.path.join(runDir, "compiled.%s" % args['modules_file'])
+            modulesFileBaseName = os.path.basename(args['modules_file'])
+            compiledCodePath = os.path.join(runDir, "compiled.%s" % modulesFileBaseName)
             compiledCodePath = os.path.normpath(compiledCodePath)
             with open(compiledCodePath, 'w') as compiledFile:
                 compiledFile.write(compiledCode)
