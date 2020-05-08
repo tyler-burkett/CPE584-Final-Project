@@ -70,7 +70,9 @@ This will show a usage screen
 &nbsp;  
 
 $ module_parser.py modules_file model_func_map module_regex  
-This will call the function without optional arguments. These file are assumed to be in the same directory if no path is given.
+This will call the function without optional arguments. These file are assumed to be in the same directory if no path is given.     
+**example call:** scs8hd/scs8hd.v scs8hd/scs8hd.v model_maps/scs8hd_map.csv "(?P<lib>[^\_]+)\_(?P<base>[^\_]+\_?[^\_]\*)\_(?P<drive>[^\_]+)" -c -d rundir
+
 
 #### Positional Arguments
 modules_file  
@@ -95,6 +97,12 @@ This displays a help menu.
 -d RUN_DIR   
 This command allows you to select the location of the run directory. The default location is the current directory.    
 **example call:** $ module_parser.py -d ./secondary_run modules_file model_func_map module_regex
+&nbsp;  
+&nbsp;
+
+-c    
+This command allows you to create a compiled.[lib].v that contains the simplified Verilog file that the parser looks at.    
+**example call:** $ module_parser.py -d ./secondary_run modules_file model_func_map module_regex -c
 &nbsp;  
 &nbsp;
 
