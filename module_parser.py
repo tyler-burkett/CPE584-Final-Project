@@ -468,6 +468,7 @@ def readFileToString(filePath):
             return file.read()
     except IOError:
         sys.stderr.write("Error: failed to open \'%s\' for reading.\n" % filePath)
+        exit(1)
 
 
 
