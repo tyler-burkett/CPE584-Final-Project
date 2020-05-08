@@ -11,6 +11,9 @@ import os
 
 
 
+# ---------- Begin class and method definitons ----------
+# ----------    (Jump to line 558 for main)    ----------
+
 class DASTNode (metaclass = abc.ABCMeta):
     @abc.abstractmethod
     def evaluate(self, macroContext = {}):
@@ -459,12 +462,6 @@ def findUsedMacros(code):
 
 
 
-def splitModules(code):
-    # TODO
-    pass
-
-
-
 def readFileToString(filePath):
     try:
         with open(filePath, 'r') as file:
@@ -497,14 +494,13 @@ def compileNamingConvention(regexStr):
 
 
 
-
 def getArgs():
-    description = ''
+    description = 'Generate a library specification YAML file from Verilog modules that use a specified regex naming convention.'
     epilog = ''
     argParser = argparse.ArgumentParser(description=description, epilog=epilog, formatter_class=argparse.RawTextHelpFormatter)
 
     runDirHelp = 'Specify the run directory. Defaults to the current directory.'
-    argParser.add_argument('-d', metavar='RUN_DIR', dest='runDir', nargs=1, default='.', help=runDirHelp)
+    argParser.add_argument('-d', metavar='RUN_DIR', dest='runDir', nargs='?', default='.', const='.', help=runDirHelp)
 
     macrosHelp = inspect.cleandoc('''
     Specify the list of defined macros to use when parsing the Verilog modules.
@@ -526,9 +522,34 @@ def getArgs():
 
     modRegexHelp = inspect.cleandoc('''
     The regular expression defining the naming convention used by the modules
-    defined in the 'modules_file' Verilog file. 
+    defined in the 'modules_file' Verilog file. The regex syntax defined by the
+    the "re" Python module should be followed. This regular expression must 
+    include three capturing groups named: "lib", "base", and "drive". These
+    capturing groups are used to extract the library name, base name, and
+    drive strength, respectively, from each module's name. The regex will
+    likely need to be wrapped in double quotes (") in order to avoid the
+    special characters that are recognized by the user's shell. 
+    For example, in order to run this script on a set of modules that are named
+    by the combination of their library name (any sequence of uppercase 
+    characters, an underscore, the base name of the cell (any sequence of 
+    lowercase characters), an underscore, and the drive strength of that 
+    particular cell (any sequence of digits), the following regex could be used
+    (?P<lib>[A-Z]+)_(?P<base>[a-z]+)_(?P<drive>[\\d]+)
+    Consider another example in which the following regex is used to parse
+    modules named such that the first five alphanumeric characters identify the
+    base name, the next three alphanumeric characters identify the library, and
+    the remaining digit characters identify the drive strength, which may
+    include a single upper- or lowercase letter 'p' followed by any number of 
+    more digits in order to represent a number with a fractional component
+    (?P<base>[A-Aa-z\\d]{5})(?P<lib>[A-Za-z\\d]{3})(?P<drive>[\\d]+(?:[pP][\\d]+)?)
     ''')
     argParser.add_argument('module_regex', help=modRegexHelp)
+
+    outputCompiledHelp = inspect.cleandoc('''
+    Write the Verilog code that was compiled based on the macros defined by the
+    -m option to the file named 'compiled.<modules_file>.
+    ''')
+    argParser.add_argument('-c', dest='outputCompiledFlag', action='store_true', help=outputCompiledHelp)
 
     return vars(argParser.parse_args())
 
@@ -556,6 +577,29 @@ if __name__ == "__main__":
     macroContext = dict.fromkeys(specifiedMacros, True)
     compiledCode = compileVerilogWithMacros(fileStr, macroContext)
 
+    # Ensure that the run directory either exists and is accesible or attempt
+    # to create it
+    runDir = args['runDir']
+    if not os.path.exists(runDir):
+        try:
+            os.mkdir(runDir)
+        except IOError:
+            sys.stderr.write("Error: Failed to open run directory for output.\n")
+            sys.exit(1)
+
+    # Write the compiled code to an output file if the associated flag was set
+    # at the command-line. 
+    if args['outputCompiledFlag']:
+        try:
+            compiledCodePath = os.path.join(runDir, "compiled.%s" % args['modules_file'])
+            compiledCodePath = os.path.normpath(compiledCodePath)
+            with open(compiledCodePath, 'w') as compiledFile:
+                compiledFile.write(compiledCode)
+                print('Wrote compiled code to: %s' % compiledCodePath)
+        except IOError:
+            sys.stderr.write("Error: failed to open \'%s\' for writing\n" % compiledCodePath)
+            exit(1)
+
     # Compile and check the specifiec module naming convention regex
     namingConventionRegex = compileNamingConvention(args['module_regex'])
 
@@ -577,7 +621,7 @@ if __name__ == "__main__":
 
         # Perform some checking on the name of the module
         if moduleComponentsMatch is None:
-            print('Warning: Skipping module \'%s\', which does not comply to the naming convention.', moduleName)
+            print('Warning: Skipping module \'%s\', which does not comply to the naming convention.' % moduleName)
             unknownNamings.add(moduleName)
             continue
 
@@ -585,15 +629,15 @@ if __name__ == "__main__":
         base = moduleComponentsMatch['base']
         drive = moduleComponentsMatch['drive']
         if lib is None:
-            print('Warning: Skipping module \'%s\', which has no \'lib\' component in the name.', moduleName)
+            print('Warning: Skipping module \'%s\', which has no \'lib\' component in the name.' % moduleName)
             unknownNamings.add(moduleName)
             continue
         if base is None:
-            print('Warning: Skipping module \'%s\', which has no \'base\' component in the name.', moduleName)
+            print('Warning: Skipping module \'%s\', which has no \'base\' component in the name.' % moduleName)
             unknownNamings.add(moduleName)
             continue
         if drive is None:
-            print('Warning: Skipping module \'%s\', which has no \'drive\' component in the name.', moduleName)
+            print('Warning: Skipping module \'%s\', which has no \'drive\' component in the name.' % moduleName)
             unknownNamings.add(moduleName)
             continue
 
@@ -645,16 +689,6 @@ if __name__ == "__main__":
                 # for this base/cell
                 cell['drive'].append(drive)
 
-    # Ensure that the run directory either exists and is accesible or attempt
-    # to create it
-    runDir = args['runDir']
-    if not os.path.exists(runDir):
-        try:
-            os.mkdir(runDir)
-        except OSError:
-            sys.stderr.write("Error: Failed to open run directory for output.\n")
-            sys.exit(1)
-
     # For each library, dump the results into a yaml file
     for libName, libDict in libraries.items():
         # Re-represent the library dict as expected 
@@ -663,11 +697,13 @@ if __name__ == "__main__":
         # Attempt to write the output yaml file
         try:
             libYamlFilePath = os.path.join(runDir, libName + '.yml')
+            libYamlFilePath = os.path.normpath(libYamlFilePath)
             with open(libYamlFilePath, 'w') as ymlFile:
                 yaml.safe_dump(ymlLibDict, ymlFile)
                 print('Wrote to: %s' % libYamlFilePath)
         except IOError:
             sys.stderr.write("Error: failed to open \'%s\' for writing\n" % libYamlFilePath)
+            exit(1)
 
     print('Complete.')
 
