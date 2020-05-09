@@ -116,10 +116,10 @@ $ module_parser.py -args arguments.csv -f modelFuncMap.csv
 &nbsp;
 
 -r MODULE_REGEX\
-The regular expression defining the naming convention used by the modules defined in the 'modules_file' Verilog file. The regex syntax defined by the the "re" Python module should be followed. This regular expression must include four capturing groups named: "lib", "model", "base", and "drive". These capturing groups are used to extract the library name, model name, base name, and drive strength, respectively, from each module's name. The "base" name is used to find the module/cell's corresponding function from the model-func mapping file, whereas the "model" name is the name of the cell, which might include an extension to specify the particular channel length of the given cell.
+The regular expression defining the naming convention used by the modules defined in the 'modules_file' Verilog file. The regex syntax defined by the the "re" Python module should be followed. This regular expression must include four capturing groups named: "lib", "model", "base", and "drive". These capturing groups are used to extract the library name, model name, base name, and drive strength, respectively, from each module's name. The "base" name is used to find the module/cell's corresponding function from the model-func mapping file, whereas the "model" name is the name of the cell, which might include an extension to specify the particular channel length of the given cell.\
 &nbsp;
 For example, in order to run this script on a set of modules that are named by the combination of their library name (any sequence of uppercase characters); an underscore; the model name of the cell, which is composed of the base name of the cell (any sequence of lowercase characters) an underscore, and an extension name (any sequence of lowercase characters and digits); an underscore; and the drive strength of that particular cell (any sequence of digits), the following regex could be used:
-`(?P<lib>[A-Z]+)_(?P<model>(?P<base>[a-z]+)_[a-z\d]+)_(?P<drive>[\d]+)`
+`(?P<lib>[A-Z]+)_(?P<model>(?P<base>[a-z]+)_[a-z\d]+)_(?P<drive>[\d]+)`\
 &nbsp;
 The regex will likely need to be wrapped in double quotes (") when provided by this command line option in order to avoid the special characters that are recognized by the user's shell.\
 **example call:**\
