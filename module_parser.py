@@ -228,7 +228,6 @@ def tokenizeByDirective(code = ""):
     identifierRegex = re.compile(r"\s*(?P<identifier>[A-Za-z_][A-Za-z_0-9]*)\s*")
     fileNameRegex = re.compile(r"\s*\"(?P<fileName>[^\"]*)\"")
     timeScaleRegex = re.compile(r"\s*(?P<period>\d+)\s*(?P<periodUnit>[a-z]+)\s*/\s*(?P<prec>\d+)\s*(?P<precUnit>[a-z]+)")
-    #defineRegex = re.compile(r"\s*(?P<macroName>[A-Za-z_][A-Za-z_0-9]*)[ \s\t]*(?P<macroText>[^\n]+(?<!\s))$")
     defineRegex = re.compile(r"\s*(?P<macroName>[A-Za-z_][A-Za-z_0-9]*)[ \s\t]+(?P<macroText>[^\s])")
 
     for directiveNameMatch in re.finditer(r"`(?P<directiveName>[A-Za-z_][A-Za-z_0-9]*)\s*", code):
@@ -405,24 +404,6 @@ def compileVerilogWithMacros(code = "", macroContext = {}):
 
 
 
-def loadModelFuncMap(filePath):
-    modelFuncMap = {}
-    try:
-        with open(filePath, 'r') as csvFile:
-            csvReader = csv.reader(csvFile, delimiter=',')
-            for rowNum, row in enumerate(csvReader):
-                if len(row) != 2:
-                    sys.stderr.write("Error: invalid row %d in csv model-func mapping file.\n" % rowNum)
-                    sys.exit(1)
-                modelFuncMap[row[1].strip()] = row[0].strip()
-            return modelFuncMap
-
-    except IOError:
-        sys.stderr.write("Error: failed to open \'%s\' for reading\n" % filePath)
-        exit(1)
-
-
-
 def extractInputPins(moduleCode):
     # Extract all input definitions
     # (i.e. a list of strings, where each string is a given `input` statement's
@@ -462,12 +443,86 @@ def findUsedMacros(code):
 
 
 
+def loadArgumentFile(filePath):
+    args = {}
+    VALID_ARGS = {'modules', 'map', 'regex', 'run_dir', 'macros'}
+    try:
+        with open(filePath, 'r') as csvFile:
+            csvReader = csv.reader(csvFile, delimiter=',')
+            # Read in as many arguments as possible, which need not be in any
+            # particular order
+            for rowNum, row in enumerate(csvReader):
+                columnCount - len(row)
+
+                # Skip empty rows
+                if columnCount == 0:
+                    continue
+                
+                argType = row[0]
+                if argType not in VALID_ARGS:
+                    print("Warning: Skipping row %d in argument file with unknown type \'%s\'.\n" % (rowNum, argType))
+                    continue
+
+                if columnCount == 1:
+                    print("Warning: Skipping row %d in argument file with no value(s) provided.\n" % rowNum)
+                    continue
+
+                if argType in args:
+                    print("Warning: Row %d in argument file overwrites previous definition for \'%s\'.\n" % (rowNum, argType))
+
+                # The 'macros' argument is a list of values
+                if argType == 'macros':
+                    macroList = []
+                    for column in row[1:columnCount]:
+                        macroList.append(column)
+                    args['macros'] = macroList
+
+                # All other arguments expect a single value
+                if columnCount > 2:
+                    print("Warning: Ignoring extra values provided for type \'%s\' in row %d in argument file.\n" % (argType, rowNum))
+                    args[argType] = row[0]
+
+            return args
+
+    except IOError:
+        sys.stderr.write("Error: failed to open \'%s\' for reading\n" % filePath)
+        exit(1)
+
+
+
 def readFileToString(filePath):
     try:
         with open(filePath, 'r') as file:
             return file.read()
     except IOError:
         sys.stderr.write("Error: failed to open \'%s\' for reading.\n" % filePath)
+        exit(1)
+
+
+
+def loadModelFuncMap(filePath):
+    modelFuncMap = {}
+    try:
+        with open(filePath, 'r') as csvFile:
+            csvReader = csv.reader(csvFile, delimiter=',')
+            for rowNum, row in enumerate(csvReader):
+                if len(row) < 2:
+                    sys.stderr.write("Error: invalid row %d in csv model-func mapping file.\n" % rowNum)
+                    sys.exit(1)
+
+                # The first column is the funcion. All of the following columns
+                # define a base name that map to that function. The number of
+                # base name columns in a row can be >= 1.
+                # That is, skip the first column and map all base name columns
+                # to the function in the 1st column.
+                func = row[0].strip()
+                for i in range(1, len(row)):
+                    modelFuncMap[row[i].strip()] = func
+
+            return modelFuncMap
+
+    except IOError:
+        sys.stderr.write("Error: failed to open \'%s\' for reading\n" % filePath)
         exit(1)
 
 
@@ -479,6 +534,9 @@ def compileNamingConvention(regexStr):
         groups = namingConvention.groupindex
         if 'lib' not in groups:
             sys.stderr.write("Error: A \'lib\' capturing group must be defined in the naming convention regular expression.\n")
+            exit(1)
+        elif 'model' not in groups:
+            sys.stderr.write("Error: A \'model\' capturing group must be defined in the naming convention regular expression.\n")
             exit(1)
         elif 'base' not in groups:
             sys.stderr.write("Error: A \'base\' capturing group must be defined in the naming convention regular expression.\n")
@@ -495,10 +553,41 @@ def compileNamingConvention(regexStr):
 
 
 
-def getArgs():
+def getCLArgs():
     description = 'Generate a library specification YAML file from Verilog modules that use a specified regex naming convention.'
     epilog = ''
     argParser = argparse.ArgumentParser(description=description, epilog=epilog, formatter_class=argparse.RawTextHelpFormatter)
+
+    argFileHelp = inspect.cleandoc('''
+    The command line arguments can be subsituted for the values specified 
+    within this CSV arguments file. The file shoudl be organized such that the
+    first column in each row specifies a valid argument type, and the second
+    column specifies the value for that argument type. If a particular 
+    argument type accepts a list of values, then all columns following the 
+    first are treated as a list of values. Otherwise, any extra columns in a
+    row will be ignored. If an argument is defined twice within this file, 
+    then the later definition will overwrite the former. 
+
+    The valid arguments types that can be specified in the first column are:
+        'modules'   - The Verilog file containing the module definitions to
+                      parse. Accepts a single value. Corresponds to the -v 
+                      option.
+        'map'       - The CSV model-func mapping file. Accepts a single value.
+                      Corresponds to the -f option.
+        'regex'     - The regular expression defining he naming convention used
+                      by the modules defined in the Verilog modules file. 
+                      Accepts a single value. Corresonds to the -r option. 
+        'run_dir'   - The run directory. Accepts a single value. Corresponds to
+                      the -d option.
+        'macros'    - The list of defined macros to use when parsing the 
+                      Verilog modules file. Accepts a list of values. 
+                      Corresponds to the -m option.
+
+    If an argument is specified in a provided argument file and by the
+    corresponding command line option, then the command line option takes
+    precedence.
+    ''')
+    argParser.add_argument('-args', help=argFileHelp)
 
     runDirHelp = 'Specify the run directory. Defaults to the current directory.'
     argParser.add_argument('-d', metavar='RUN_DIR', dest='runDir', nargs='?', default='.', const='.', help=runDirHelp)
@@ -560,7 +649,7 @@ def getArgs():
 
 if __name__ == "__main__":
     # Parse the command-line arguments.
-    args = getArgs()
+    argsFromCL = getCLArgs()
 
     # Read in the model-func mapping file
     modelFuncMap = loadModelFuncMap(args['model_func_map'])
@@ -628,10 +717,15 @@ if __name__ == "__main__":
             continue
 
         lib = moduleComponentsMatch['lib']
+        model = moduleComponentsMatch['model']
         base = moduleComponentsMatch['base']
         drive = moduleComponentsMatch['drive']
         if lib is None:
             print('Warning: Skipping module \'%s\', which has no \'lib\' component in the name.' % moduleName)
+            unknownNamings.add(moduleName)
+            continue
+        if model is None:
+            print('Warning: Skipping module \'%s\', which has no \'model\' component in the name.' % moduleName)
             unknownNamings.add(moduleName)
             continue
         if base is None:
@@ -645,10 +739,11 @@ if __name__ == "__main__":
 
         # Lookup this module's func from the model-func map
         if base not in modelFuncMap:
-            print("Warning: Skipping module \'%s\' with unrecognized base \'%s\'." % (moduleName, base))
+            print("Warning: Module \'%s\' has an unrecognized base \'%s\'. The \'function\' field for this cell will be left null in the YAML file." % (moduleName, base))
             unrecognizedBases.add(base)
-            continue
-        func = modelFuncMap[base]
+            func = None
+        else:
+            func = modelFuncMap[base]
 
         # Extract pins
         inputPins = extractInputPins(moduleCodeMatch[0])
@@ -657,21 +752,21 @@ if __name__ == "__main__":
         # Update the entry for this module's cell
         if lib not in libraries:
             # This library has not been encountered yet, so make a new entry
-            cell = {'function': func, 'name': base, 'drive': [drive], 'out': outputPins, 'in': inputPins}
-            cells = {base: cell}
+            cell = {'function': func, 'name': model, 'drive': [drive], 'out': outputPins, 'in': inputPins}
+            cells = {model: cell}
             libraries[lib] = {'lib': lib, 'cells': cells}
 
         else:
             cells = libraries[lib]['cells']
-            if base not in cells:
-                # This library does not have an entry for this module's base,
+            if model not in cells:
+                # This library does not have an entry for this module's model,
                 # so make a new entry
-                cell = {'function': func, 'name': base, 'drive': [drive], 'out': outputPins, 'in': inputPins}
-                cells[base] = cell
+                cell = {'function': func, 'name': model, 'drive': [drive], 'out': outputPins, 'in': inputPins}
+                cells[model] = cell
 
             else: 
-                # This base already has an entry, so update it.
-                cell = cells[base]
+                # This model already has an entry, so update it.
+                cell = cells[model]
 
                 if drive in cell['drive']:
                     # Uh, oh, this drive strength has already been defined for
@@ -682,13 +777,13 @@ if __name__ == "__main__":
 
                 if inputPins != cell['in'] or outputPins != cell['out']:
                     # Uh, oh, this drive has conflicting pin definitions with
-                    # previously defined drives for this base/cell
-                    print("Warning: Skipping module \'%s\', which defines pins that conflict with the pins defined by other drives for this same base." % moduleName)
-                    pinCountClashes.add(base)
+                    # previously defined drives for this model/cell
+                    print("Warning: Skipping module \'%s\', which defines pins that conflict with the pins defined by other drives for this same model." % moduleName)
+                    pinCountClashes.add(model)
                     continue
 
                 # All tests passed, so add the new drive strength to the entry
-                # for this base/cell
+                # for this model/cell
                 cell['drive'].append(drive)
 
     # For each library, dump the results into a yaml file
