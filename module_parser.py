@@ -12,7 +12,7 @@ import os
 
 
 # ---------- Begin class and method definitons ----------
-# ----------    (Jump to line 558 for main)    ----------
+# ----------    (Jump to line 706 for main)    ----------
 
 class DASTNode (metaclass = abc.ABCMeta):
     @abc.abstractmethod
@@ -445,20 +445,23 @@ def findUsedMacros(code):
 
 def loadArgumentFile(filePath):
     args = {}
-    VALID_ARGS = {'modules', 'map', 'regex', 'run_dir', 'macros'}
+    VALID_ARGS = {'MODULES_FILE', 'MAP_FILE', 'MODULE_REGEX', 'RUN_DIR', 'MACROS'}
     try:
         with open(filePath, 'r') as csvFile:
             csvReader = csv.reader(csvFile, delimiter=',')
             # Read in as many arguments as possible, which need not be in any
             # particular order
             for rowNum, row in enumerate(csvReader):
-                columnCount - len(row)
+                columnCount = len(row)
 
                 # Skip empty rows
                 if columnCount == 0:
                     continue
                 
-                argType = row[0]
+                # Make the arguments type case-insensitive by always converting
+                # it to uppercase.
+                argType = row[0].upper()
+
                 if argType not in VALID_ARGS:
                     print("Warning: Skipping row %d in argument file with unknown type \'%s\'.\n" % (rowNum, argType))
                     continue
@@ -470,23 +473,52 @@ def loadArgumentFile(filePath):
                 if argType in args:
                     print("Warning: Row %d in argument file overwrites previous definition for \'%s\'.\n" % (rowNum, argType))
 
-                # The 'macros' argument is a list of values
-                if argType == 'macros':
+                # The 'MACROS' argument is a list of values.
+                # All  other arguments expect a single value.
+                if argType == 'MACROS':
                     macroList = []
                     for column in row[1:columnCount]:
                         macroList.append(column)
-                    args['macros'] = macroList
+                    args[argType] = macroList
+                else:
+                    args[argType] = row[1]
 
                 # All other arguments expect a single value
                 if columnCount > 2:
                     print("Warning: Ignoring extra values provided for type \'%s\' in row %d in argument file.\n" % (argType, rowNum))
-                    args[argType] = row[0]
 
             return args
 
     except IOError:
-        sys.stderr.write("Error: failed to open \'%s\' for reading\n" % filePath)
+        sys.stderr.write("Error: failed to open \'%s\' arguments file for reading.\n" % filePath)
         exit(1)
+
+
+
+def resolveArguments(argsFromCL, argsFromFile):
+    requiredArgs = {'MODULES_FILE', 'MAP_FILE', 'MODULE_REGEX'}
+    optionalArgDefaultValues = {'MACROS': [], 'RUN_DIR': '.'}
+
+    # Overwrite any arguments defined in the argument file by arguments
+    # specified at the command line.
+    args = argsFromFile.copy()
+    for argType, argValue in argsFromCL.items():
+        if argValue is not None:
+            args[argType] = argValue
+
+    # Ensure that all required arguments were provided in either the arguments
+    # file or by the command line.
+    for requiredArg in requiredArgs:
+        if requiredArg not in args:
+            sys.stderr.write("Error: The \'%s\' argument must be specified in either an arguments file or by using the corresponding command line option.\n" % requiredArg)
+            exit(1)
+
+    # Ensure that all unspecified optional arguments use their default values
+    for argType, defaultValue in optionalArgDefaultValues.items():
+        if argType not in args:
+            args[argType] = defaultValue
+
+    return args
 
 
 
@@ -522,7 +554,7 @@ def loadModelFuncMap(filePath):
             return modelFuncMap
 
     except IOError:
-        sys.stderr.write("Error: failed to open \'%s\' for reading\n" % filePath)
+        sys.stderr.write("Error: failed to open \'%s\' model-func mapping file for reading.\n" % filePath)
         exit(1)
 
 
@@ -554,13 +586,18 @@ def compileNamingConvention(regexStr):
 
 
 def getCLArgs():
-    description = 'Generate a library specification YAML file from Verilog modules that use a specified regex naming convention.'
+    description = \
+    'Generate a library specification YAML file from Verilog modules that ' + \
+    'use a specified regex naming convention. At a minimum, each of the '   + \
+    '\'MODULES_FILE\', \'MAP_FILE\', and \'MODULE_REGEX\' arguments must '  + \
+    'be specified in the arguments file and/or via using the corresponding '+ \
+    'command line options.'
     epilog = ''
     argParser = argparse.ArgumentParser(description=description, epilog=epilog, formatter_class=argparse.RawTextHelpFormatter)
 
     argFileHelp = inspect.cleandoc('''
     The command line arguments can be subsituted for the values specified 
-    within this CSV arguments file. The file shoudl be organized such that the
+    within this CSV arguments file. The file should be organized such that the
     first column in each row specifies a valid argument type, and the second
     column specifies the value for that argument type. If a particular 
     argument type accepts a list of values, then all columns following the 
@@ -569,77 +606,98 @@ def getCLArgs():
     then the later definition will overwrite the former. 
 
     The valid arguments types that can be specified in the first column are:
-        'modules'   - The Verilog file containing the module definitions to
-                      parse. Accepts a single value. Corresponds to the -v 
-                      option.
-        'map'       - The CSV model-func mapping file. Accepts a single value.
-                      Corresponds to the -f option.
-        'regex'     - The regular expression defining he naming convention used
-                      by the modules defined in the Verilog modules file. 
-                      Accepts a single value. Corresonds to the -r option. 
-        'run_dir'   - The run directory. Accepts a single value. Corresponds to
-                      the -d option.
-        'macros'    - The list of defined macros to use when parsing the 
-                      Verilog modules file. Accepts a list of values. 
-                      Corresponds to the -m option.
+        'MODULES_FILE'  - The Verilog file containing the module definitions to
+                          parse. Accepts a single value. Corresponds to the -v 
+                          option.
+        'MAP_FILE'      - The CSV model-func mapping file. Accepts a single 
+                          value. Corresponds to the -f option.
+        'MODULE_REGEX'  - The regular expression defining he naming convention
+                          used by the modules defined in the Verilog modules 
+                          file. Accepts a single value. Corresponds to the -r 
+                          option. 
+        'RUN_DIR'       - The run directory. Accepts a single value. 
+                          Corresponds to the -d option.
+        'MACROS'        - The list of defined macros to use when parsing the 
+                          Verilog modules file. Accepts a list of values. 
+                          Corresponds to the -m option.
 
     If an argument is specified in a provided argument file and by the
     corresponding command line option, then the command line option takes
     precedence.
     ''')
-    argParser.add_argument('-args', help=argFileHelp)
+    argParser.add_argument('-args', metavar='ARGS_FILE', dest='ARGS_FILE', help=argFileHelp)
 
-    runDirHelp = 'Specify the run directory. Defaults to the current directory.'
-    argParser.add_argument('-d', metavar='RUN_DIR', dest='runDir', nargs='?', default='.', const='.', help=runDirHelp)
-
-    macrosHelp = inspect.cleandoc('''
-    Specify the list of defined macros to use when parsing the Verilog modules.
-    If this flag is not present, or if present without any macros listed, then 
-    the verilog code is parsed with no macros initially set. Any `define 
-    directives encountered will cause the script to continue on with the 
-    specified macro as now being defined, and any `undef directives will cause
-    the script to continue on with the given macro as no longer being defined, 
-    regardless of the macros specified by this option. Thus, the "definition"
-    of a macro changes accordingly as the Verilog code is parsed. 
+    vModsHelp = inspect.cleandoc('''
+    Specify the Verilog file containing the module definitions to parse.
     ''')
-    argParser.add_argument('-m', metavar='MACRO', nargs='*', dest='macros', default=[], help=macrosHelp)
+    argParser.add_argument('-v', metavar='MODULES_FILE', dest='MODULES_FILE', help=vModsHelp)
 
-    vModsHelp = 'The Verilog file containing the module definitions to parse.'
-    argParser.add_argument('modules_file', help=vModsHelp)
-
-    modFuncMapHelp = 'The CSV model-func mapping file.'
-    argParser.add_argument('model_func_map', help=modFuncMapHelp)
+    modFuncMapHelp = inspect.cleandoc('''
+    Specify the CSV model-func mapping file. The file should be structured such
+    that in each row, a module/cell's base name is listed in the second column
+    and its corresponding "golden standard" function name is given in the first
+    column. If multiple cells' base names map to the same function name, then
+    all of these base names may be listed in the same row. 
+    ''')
+    argParser.add_argument('-f', metavar='MAP_FILE', dest='MAP_FILE', help=modFuncMapHelp)
 
     modRegexHelp = inspect.cleandoc('''
     The regular expression defining the naming convention used by the modules
     defined in the 'modules_file' Verilog file. The regex syntax defined by the
     the "re" Python module should be followed. This regular expression must 
-    include three capturing groups named: "lib", "base", and "drive". These
-    capturing groups are used to extract the library name, base name, and
-    drive strength, respectively, from each module's name. The regex will
-    likely need to be wrapped in double quotes (") in order to avoid the
-    special characters that are recognized by the user's shell. 
+    include four capturing groups named: "lib", "model", "base", and "drive". 
+    These capturing groups are used to extract the library name, model name,
+    base name, and drive strength, respectively, from each module's name. The 
+    "base" name is used to find the module/cell's corresponding function from
+    the model-func mapping file, whereas the "model" name is the name of the
+    cell, which might include an extension to specify the particular channel
+    length of the given cell. 
+     
     For example, in order to run this script on a set of modules that are named
     by the combination of their library name (any sequence of uppercase 
-    characters, an underscore, the base name of the cell (any sequence of 
-    lowercase characters), an underscore, and the drive strength of that 
-    particular cell (any sequence of digits), the following regex could be used
-    (?P<lib>[A-Z]+)_(?P<base>[a-z]+)_(?P<drive>[\\d]+)
-    Consider another example in which the following regex is used to parse
-    modules named such that the first five alphanumeric characters identify the
-    base name, the next three alphanumeric characters identify the library, and
-    the remaining digit characters identify the drive strength, which may
-    include a single upper- or lowercase letter 'p' followed by any number of 
-    more digits in order to represent a number with a fractional component
-    (?P<base>[A-Aa-z\\d]{5})(?P<lib>[A-Za-z\\d]{3})(?P<drive>[\\d]+(?:[pP][\\d]+)?)
+    characters); an underscore; the model name of the cell, which is composed
+    of the base name of the cell (any sequence of lowercase characters)
+    an underscore, and an extension name (any sequence of lowercase characters
+    and digits); an underscore; and the drive strength of that particular cell
+    (any sequence of digits), the following regex could be used:
+    (?P<lib>[A-Z]+)_(?P<model>(?P<base>[a-z]+)_[a-z\\d]+)_(?P<drive>[\\d]+)
+
+    The regex will likely need to be wrapped in double quotes (") when provided
+    by this command line option in order to avoid the special characters that are
+    recognized by the user's shell.
     ''')
-    argParser.add_argument('module_regex', help=modRegexHelp)
+    argParser.add_argument('-r', metavar='MODULE_REGEX', dest='MODULE_REGEX', help=modRegexHelp)
+
+    macrosHelp = inspect.cleandoc('''
+    Specify the list of defined macros to use when parsing the Verilog modules.
+    If this flag is not present or is present without any macros listed and is
+    not defined within the arguments file, then the Verilog code is parsed with
+    no macros initially set. Any `define directives encountered will cause the
+    script to continue on with the specified macro as now being defined, and
+    any `undef directives will cause the script to continue on with the given
+    macro as no longer being defined, regardless of the macros specified by
+    this option and/or in the arguments file. Thus, the "definition" of a macro
+    changes accordingly as the Verilog code is parsed. 
+    ''')
+    argParser.add_argument('-m', metavar='MACRO', nargs='*', dest='MACROS', help=macrosHelp)
+
+    runDirHelp = inspect.cleandoc('''
+    Specify the run directory. Defaults to the current directory.
+    ''')
+    argParser.add_argument('-d', metavar='RUN_DIR', dest='RUN_DIR', help=runDirHelp)
 
     outputCompiledHelp = inspect.cleandoc('''
     Write the Verilog code that was compiled based on the macros defined by the
-    -m option to the file named 'compiled.<modules_file>.
+    -m option or within the arguments file to the file named
+    'compiled.<MODULES_FILE>'.
     ''')
     argParser.add_argument('-c', dest='outputCompiledFlag', action='store_true', help=outputCompiledHelp)
+
+    # As all arguments are technically optional, check to ensure that no
+    # arguments given is not the case
+    if len(sys.argv) == 1:
+        argParser.print_usage()
+        exit(1)
 
     return vars(argParser.parse_args())
 
@@ -651,15 +709,27 @@ if __name__ == "__main__":
     # Parse the command-line arguments.
     argsFromCL = getCLArgs()
 
+    # Parse the argument file if it was provided
+    argsFromFile = {}
+    if argsFromCL['ARGS_FILE'] is not None:
+        argsFromFile = loadArgumentFile(argsFromCL['ARGS_FILE'])
+
+    # Ensure that all required arguments were either defined in the arguments
+    # file or provided at the command line, and resolve any conflicts if
+    # defined by both
+    args = resolveArguments(argsFromCL, argsFromFile)
+
     # Read in the model-func mapping file
-    modelFuncMap = loadModelFuncMap(args['model_func_map'])
+    modelFuncMap = loadModelFuncMap(args['MAP_FILE'])
+    print("Reading model-func mappings from: %s" % args['MAP_FILE'])
 
     # Read in the Verilog code as is.
-    fileStr = readFileToString(args['modules_file'])
+    fileStr = readFileToString(args['MODULES_FILE'])
+    print("Reading modules from: %s" % args['MODULES_FILE'])
 
     # Report which macros are available vs. which macros will be used.
     allMacros = findUsedMacros(fileStr)
-    specifiedMacros = set(args['macros'])
+    specifiedMacros = set(args['MACROS'])
     print("Macros found in code:\t%s\nUsing specified macros:\t%s" % (', '.join(allMacros), ', '.join(specifiedMacros)))
 
     # Generate the resulting Verilog code given the specified macros.
@@ -669,7 +739,7 @@ if __name__ == "__main__":
 
     # Ensure that the run directory either exists and is accesible or attempt
     # to create it
-    runDir = args['runDir']
+    runDir = args['RUN_DIR']
     if not os.path.exists(runDir):
         try:
             os.mkdir(runDir)
@@ -681,18 +751,18 @@ if __name__ == "__main__":
     # at the command-line. 
     if args['outputCompiledFlag']:
         try:
-            modulesFileBaseName = os.path.basename(args['modules_file'])
+            modulesFileBaseName = os.path.basename(args['MODULES_FILE'])
             compiledCodePath = os.path.join(runDir, "compiled.%s" % modulesFileBaseName)
             compiledCodePath = os.path.normpath(compiledCodePath)
             with open(compiledCodePath, 'w') as compiledFile:
                 compiledFile.write(compiledCode)
                 print('Wrote compiled code to: %s' % compiledCodePath)
         except IOError:
-            sys.stderr.write("Error: failed to open \'%s\' for writing\n" % compiledCodePath)
+            sys.stderr.write("Error: failed to open \'%s\' for writing.\n" % compiledCodePath)
             exit(1)
 
     # Compile and check the specifiec module naming convention regex
-    namingConventionRegex = compileNamingConvention(args['module_regex'])
+    namingConventionRegex = compileNamingConvention(args['MODULE_REGEX'])
 
     # Iterate through every module definition, extract the components of
     # interest (i.e. lib name, model name, drive strength, and input & output
@@ -799,7 +869,7 @@ if __name__ == "__main__":
                 yaml.safe_dump(ymlLibDict, ymlFile)
                 print('Wrote to: %s' % libYamlFilePath)
         except IOError:
-            sys.stderr.write("Error: failed to open \'%s\' for writing\n" % libYamlFilePath)
+            sys.stderr.write("Error: failed to open \'%s\' for writin.\n" % libYamlFilePath)
             exit(1)
 
     print('Complete.')
