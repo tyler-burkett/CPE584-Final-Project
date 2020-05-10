@@ -1,0 +1,5 @@
+MAP_FILE,model_maps/scs8hd_map.csv
+MODULE_REGEX,(?P<lib>[^_]+)_(?P<model>(?P<base>[^_]+_?[^_]*))_(?P<drive>[^_]+)
+MODULES_FILE,scs8hd.v
+RUN_DIR,runDir
+MACROS,SC_USE_PG_PIN

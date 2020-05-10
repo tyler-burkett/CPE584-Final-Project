@@ -1,0 +1,5 @@
+MAP_FILE,model_maps/scl40_htc50_map_partial.csv
+MODULE_REGEX,(?P<lib>[^_]+)_(?P<model>(?P<base>[^_]+)_?[^_]*)_(?P<drive>[^_]+)
+MODULES_FILE,scl40_htc50.mv
+RUN_DIR,runDir
+MACROS,BIAS_PINS
